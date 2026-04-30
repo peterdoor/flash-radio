@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flash Radio — Misiones Cuatro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+  :root{--rojo:#e8002d;--negro:#0a0a0a;--gris:#1a1a1a;--gris2:#2a2a2a;--blanco:#f0ede8;--amarillo:#f5c400;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--display:'Bebas Neue',sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--negro);color:var(--blanco);font-family:var(--sans);min-height:100vh;}
+  header{background:var(--rojo);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:70px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--amarillo);}
+  .logo{font-family:var(--display);font-size:2.2rem;letter-spacing:4px;color:white;}
+  .logo span{color:var(--amarillo);}
+  .reloj{font-family:var(--mono);font-size:1.1rem;color:rgba(255,255,255,.85);letter-spacing:2px;}
+  main{max-width:820px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+  .turnos{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:2rem;}
+  @media(max-width:560px){.turnos{grid-template-columns:1fr;}}
+  .tbn{background:var(--gris);border:2px solid #2a2a2a;border-radius:6px;padding:1.4rem 1.2rem;cursor:pointer;transition:all .18s;text-align:left;position:relative;color:var(--blanco);width:100%;}
+  .tbn:hover{border-color:var(--rojo);background:#1f1f1f;}
+  .tbn.cargando{border-color:var(--amarillo);background:#1c1a00;cursor:wait;}
+  .tbn.listo{border-color:#00c853;background:#0a1a0a;}
+  .tbn:disabled{opacity:.4;cursor:not-allowed;}
+  .hl{font-family:var(--display);font-size:1.8rem;letter-spacing:3px;display:block;margin-bottom:.2rem;}
+  .hs{font-family:var(--mono);font-size:.7rem;color:#666;letter-spacing:1px;}
+  .hi{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-size:2rem;opacity:.2;}
+  .tbn-progress{height:3px;background:#333;border-radius:2px;margin-top:.8rem;overflow:hidden;display:none;}
+  .tbn-progress.v{display:block;}
+  .tbn-pfill{height:100%;background:var(--amarillo);width:0%;transition:width .4s ease;}
+  .tbn-label{font-family:var(--mono);font-size:.62rem;color:#888;letter-spacing:1px;margin-top:.4rem;display:none;}
+  .tbn-label.v{display:block;}
+  .result-panel{background:var(--gris);border:1px solid #2a2a2a;border-top:4px solid #00c853;border-radius:4px;padding:1.5rem;margin-bottom:1rem;display:none;animation:fi .3s ease;}
+  .result-panel.v{display:block;}
+  @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .rp-titulo{font-family:var(--display);font-size:1.3rem;letter-spacing:3px;color:var(--amarillo);margin-bottom:.8rem;}
+  .rp-guion{font-family:var(--sans);font-size:.9rem;line-height:1.85;color:#bbb;white-space:pre-wrap;margin-bottom:1.2rem;padding:.8rem;background:#111;border-radius:3px;border-left:3px solid #333;}
+  .rp-acciones{display:flex;gap:.7rem;flex-wrap:wrap;}
+  .btn{font-family:var(--mono);font-size:.72rem;letter-spacing:1.5px;padding:.6rem 1.2rem;border:none;border-radius:3px;cursor:pointer;text-transform:uppercase;transition:all .15s;display:inline-flex;align-items:center;gap:.5rem;}
+  .btn:disabled{opacity:.35;cursor:not-allowed;}
+  .btn-dl{background:var(--amarillo);color:#000;font-weight:700;font-size:.8rem;padding:.7rem 1.5rem;}
+  .btn-dl:hover:not(:disabled){background:#d4a800;}
+  .btn-play{background:#1a3a1a;color:#00c853;border:1px solid #00c853;}
+  .btn-play:hover:not(:disabled){background:#00c853;color:#000;}
+  .btn-copy{background:var(--gris2);color:#888;border:1px solid #333;}
+  .btn-copy:hover{color:var(--amarillo);border-color:var(--amarillo);}
+  .btn-regen{background:#1a1a2a;color:#5555ff;border:1px solid #3333aa;}
+  .btn-regen:hover{background:#3333aa;color:white;}
+  footer{text-align:center;font-family:var(--mono);font-size:.6rem;color:#2a2a2a;letter-spacing:2px;margin-top:3rem;padding-top:1.5rem;border-top:1px solid #111;}
+  .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;border:1px solid var(--amarillo);color:var(--amarillo);font-family:var(--mono);font-size:.75rem;padding:.6rem 1.4rem;border-radius:3px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">FLASH<span>●</span>RADIO</div>
+  <div class="reloj" id="reloj">--:--:--</div>
+</header>
+<main>
+  <div class="turnos">
+    <button class="tbn" id="tbn-mañana" onclick="generar('mañana','🌅','06:00 – 12:00 hs')">
+      <span class="hl">MAÑANA</span><span class="hs">06:00 – 12:00 hs</span><span class="hi">🌅</span>
+      <div class="tbn-progress" id="prog-mañana"><div class="tbn-pfill" id="pfill-mañana"></div></div>
+      <div class="tbn-label" id="label-mañana">Generando...</div>
+    </button>
+    <button class="tbn" id="tbn-mediodía" onclick="generar('mediodía','☀️','12:00 – 15:00 hs')">
+      <span class="hl">MEDIODÍA</span><span class="hs">12:00 – 15:00 hs</span><span class="hi">☀️</span>
+      <div class="tbn-progress" id="prog-mediodía"><div class="tbn-pfill" id="pfill-mediodía"></div></div>
+      <div class="tbn-label" id="label-mediodía">Generando...</div>
+    </button>
+    <button class="tbn" id="tbn-tarde" onclick="generar('tarde','🌆','15:00 – 20:00 hs')">
+      <span class="hl">TARDE</span><span class="hs">15:00 – 20:00 hs</span><span class="hi">🌆</span>
+      <div class="tbn-progress" id="prog-tarde"><div class="tbn-pfill" id="pfill-tarde"></div></div>
+      <div class="tbn-label" id="label-tarde">Generando...</div>
+    </button>
+    <button class="tbn" id="tbn-noche" onclick="generar('noche','🌙','20:00 – 00:00 hs')">
+      <span class="hl">NOCHE</span><span class="hs">20:00 – 00:00 hs</span><span class="hi">🌙</span>
+      <div class="tbn-progress" id="prog-noche"><div class="tbn-pfill" id="pfill-noche"></div></div>
+      <div class="tbn-label" id="label-noche">Generando...</div>
+    </button>
+  </div>
+  <div id="panels"></div>
+</main>
+<footer>FLASH RADIO · MISIONES CUATRO · IA</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const ELEVEN_KEY = 'sk_53081740672a6f601d992f95d1e9a2bdc46e77b815686c01';
+const VOICE_ID   = 'AZnzlk1XvdvUeBnXmlld'; // se reemplaza con Leonardo al iniciar
+const $ = id => document.getElementById(id);
+const datos = {};
+let voiceIdReal = VOICE_ID;
+
+// Reloj
+function tick(){const n=new Date();$('reloj').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');}
+setInterval(tick,1000);tick();
+
+function toast(msg,dur=3000){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function setProg(t,pct,label){
+  $('prog-'+t).classList.add('v');
+  $('pfill-'+t).style.width=pct+'%';
+  $('label-'+t).classList.add('v');
+  $('label-'+t).textContent=label;
+}
+function clearProg(t){
+  $('prog-'+t).classList.remove('v');
+  $('label-'+t).classList.remove('v');
+}
+
+// Buscar voz argentina Leonardo en ElevenLabs
+async function getVoice(){
+  try{
+    const r=await fetch('https://api.elevenlabs.io/v1/voices',{headers:{'xi-api-key':ELEVEN_KEY}});
+    const d=await r.json();
+    const v=d.voices?.find(x=>x.name.toLowerCase().includes('leonardo'))
+           ||d.voices?.find(x=>x.labels?.accent?.toLowerCase().includes('argentin'))
+           ||d.voices?.find(x=>x.name.toLowerCase().includes('argentin'))
+           ||null;
+    if(v) voiceIdReal=v.voice_id;
+  }catch(e){}
+}
+getVoice();
+
+async function generar(turno, icon, horaStr){
+  const btn=$('tbn-'+turno);
+  btn.disabled=true;
+  btn.classList.remove('listo');
+  btn.classList.add('cargando');
+  const panelViejo=$('panel-'+turno);
+  if(panelViejo) panelViejo.classList.remove('v');
+
+  try{
+    // PASO 1: Guión via backend Vercel
+    setProg(turno,15,'Buscando noticias...');
+    const timer=setInterval(()=>{
+      const a=parseFloat($('pfill-'+turno).style.width)||15;
+      if(a<60) $('pfill-'+turno).style.width=(a+1.5)+'%';
+    },500);
+
+    const rGuion=await fetch('/api/guion',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({turno})
+    });
+    clearInterval(timer);
+    if(!rGuion.ok){const e=await rGuion.json();throw new Error(e.error||'Error al generar guión');}
+    const {guion}=await rGuion.json();
+
+    // PASO 2: Voz con ElevenLabs (directo desde browser - sí permite CORS)
+    setProg(turno,70,'Generando voz argentina...');
+    const rVoz=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceIdReal}`,{
+      method:'POST',
+      headers:{
+        'xi-api-key':ELEVEN_KEY,
+        'Content-Type':'application/json',
+        'Accept':'audio/mpeg'
+      },
+      body:JSON.stringify({
+        text:guion,
+        model_id:'eleven_multilingual_v2',
+        voice_settings:{stability:0.45,similarity_boost:0.82,style:0.35,use_speaker_boost:true}
+      })
+    });
+    if(!rVoz.ok) throw new Error('ElevenLabs: '+rVoz.status);
+    const mp3=await rVoz.blob();
+
+    setProg(turno,100,'¡Listo!');
+    await sleep(400);
+    clearProg(turno);
+
+    datos[turno]={blob:mp3,guion};
+    btn.classList.remove('cargando');
+    btn.classList.add('listo');
+    btn.disabled=false;
+
+    mostrarPanel(turno,icon,horaStr,guion,mp3);
+
+  }catch(err){
+    console.error(err);
+    clearProg(turno);
+    btn.classList.remove('cargando');
+    btn.disabled=false;
+    toast('Error: '+err.message,5000);
+  }
+}
+
+function mostrarPanel(turno,icon,horaStr,guion,mp3){
+  const fecha=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  const url=URL.createObjectURL(mp3);
+  let panel=$('panel-'+turno);
+  if(!panel){panel=document.createElement('div');panel.id='panel-'+turno;panel.className='result-panel';$('panels').appendChild(panel);}
+  panel.innerHTML=`
+    <div class="rp-titulo">${icon} FLASH ${turno.toUpperCase()} — ${fecha}</div>
+    <div class="rp-guion">${guion}</div>
+    <div class="rp-acciones">
+      <button class="btn btn-dl" onclick="descargar('${turno}')">⬇ DESCARGAR MP3</button>
+      <button class="btn btn-play" onclick="escuchar('${turno}')">▶ ESCUCHAR</button>
+      <button class="btn btn-regen" onclick="generar('${turno}','${icon}','${horaStr}')">↺ REGENERAR</button>
+      <button class="btn btn-copy" onclick="copiar('${turno}')">⧉ COPIAR</button>
+    </div>
+    <audio id="audio-${turno}" src="${url}" style="display:none"></audio>`;
+  panel.classList.add('v');
+  setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+
+function descargar(turno){
+  if(!datos[turno]) return;
+  const fecha=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  const url=URL.createObjectURL(datos[turno].blob);
+  const a=document.createElement('a');a.href=url;a.download=`flash-${turno}-${fecha}.mp3`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  toast('Descargando MP3 ✓');
+}
+
+function escuchar(turno){
+  const a=$('audio-'+turno);
+  if(!a) return;
+  a.paused?a.play():(() => {a.pause();a.currentTime=0;})();
+}
+
+function copiar(turno){
+  if(!datos[turno]) return;
+  navigator.clipboard.writeText(datos[turno].guion).then(()=>toast('Copiado ✓')).catch(()=>toast('No se pudo copiar'));
+}
+</script>
+</body>
+</html>
