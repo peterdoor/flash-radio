@@ -1,6 +1,0 @@
-{
-  "name": "flash-radio",
-  "version": "1.0.0",
-  "description": "Flash informativo radial - Misiones Cuatro",
-  "engines": { "node": "18.x" }
-}
