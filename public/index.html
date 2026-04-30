@@ -678,13 +678,16 @@ function descargar(){
 // ══════════════════════════════════════════════════════════
 renderFeeds();
 
-// Cargar voces cuando cambia la API key
 document.getElementById('eleven-key').addEventListener('change', cargarVoces);
 
-// Cargar voces al inicio si hay key
-window.addEventListener('load',()=>{
-  if(document.getElementById('eleven-key').value.trim()) cargarVoces();
+// Cargar voces inmediatamente al abrir paso 4
+document.querySelectorAll('.step-tab')[3].addEventListener('click', ()=>{
+  if(document.getElementById('voice-select').options[0]?.value==='loading'){
+    cargarVoces();
+  }
 });
+
+window.addEventListener('load', cargarVoces);
 </script>
 </body>
 </html>
