@@ -1,0 +1,10 @@
+{
+  "name": "flash-radio",
+  "version": "1.0.0",
+  "description": "Flash Radio - Misiones Cuatro",
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "dependencies": {
+    "lamejs": "^1.2.1"
+  }
+}
