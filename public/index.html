@@ -175,6 +175,7 @@ const FEEDS=[
   {name:'La Nación',       url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/'},
 ];
 const VOCES_DEFAULT=[
+  {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Mi voz favorita'},
   {id:'TX3LPaxmHKxFdv7VOQHJ',name:'Liam — latino'},
   {id:'onwK4e9ZLuTAKqWW03F9',name:'Daniel — neutro'},
   {id:'pNInz6obpgDQGcFmaJgB',name:'Arnold — grave'},
@@ -202,9 +203,14 @@ async function fetchRSS(feed){
     const xml=new DOMParser().parseFromString(txt,'text/xml');
     return Array.from(xml.querySelectorAll('item')).slice(0,20).map(item=>({
       titulo:item.querySelector('title')?.textContent?.trim()||'',
-      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,300),
+      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,400),
       fuente:feed.name,
-    })).filter(n=>n.titulo.length>5);
+    })).filter(n=>{
+      // Filtrar: titulo debe tener al menos 6 palabras Y desc al menos 20 chars
+      const palabrasTitulo=n.titulo.trim().split(/\s+/).length;
+      const tieneDesc=n.desc&&n.desc.trim().length>20;
+      return palabrasTitulo>=5&&tieneDesc;
+    });
   }catch(e){console.warn('RSS',feed.name,e.message);return[];}
 }
 
@@ -249,20 +255,58 @@ function actualizarCounter(){
   if(n>=5){document.getElementById('tab-2').disabled=false;document.getElementById('tab-3').disabled=false;}
 }
 
-function armarGuion(){
+async function armarGuion(){
   const noticias=state.seleccionadas.map(i=>state.noticias[i]);
-  const cuerpo=noticias.map(n=>{
+
+  // Clima de Posadas
+  let climaInicio='', climaFinal='';
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-27.3671&longitude=-55.8961&daily=temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&forecast_days=1');
+    const d=await r.json();
+    const tmax=Math.round(d.daily.temperature_2m_max[0]);
+    const tmin=Math.round(d.daily.temperature_2m_min[0]);
+    climaInicio=`Para hoy en Misiones se espera una mínima de ${tmin} grados y una máxima de ${tmax} grados.`;
+    climaFinal=`Recordamos que para hoy se esperan temperaturas de entre ${tmin} y ${tmax} grados en Misiones.`;
+  }catch(e){ console.warn('Clima no disponible',e); }
+
+  // Armar bloques de noticias
+  const bloques=noticias.map(n=>{
     let t=n.titulo.trim();
     if(!t.match(/[.?!]$/))t+='.';
-    let bajada='';
-    if(n.desc&&n.desc.trim().length>20){
-      bajada=n.desc.trim();
-      if(!bajada.match(/[.?!]$/))bajada+='.';
-      bajada='\n'+bajada;
+    let bajada=n.desc.trim();
+    if(!bajada.match(/[.?!]$/))bajada+='.';
+    return t+'\n'+bajada;
+  });
+
+  // Ajustar a ~280 palabras (2 minutos a 2.8 palabras/seg)
+  const META_PALABRAS=280;
+  const intro='Noticias de Misiones Cuatro en dos minutos.';
+  const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
+  const fijas=[intro, climaInicio, cierre, climaFinal].join(' ');
+  const palabrasFijas=fijas.split(/\s+/).filter(Boolean).length;
+  let palabrasRestantes=META_PALABRAS-palabrasFijas;
+
+  let cuerpo='';
+  for(const bloque of bloques){
+    const pw=bloque.split(/\s+/).filter(Boolean).length;
+    if(palabrasRestantes<=0) break;
+    if(pw>palabrasRestantes){
+      // Truncar el bloque para no pasarse
+      const palabras=bloque.split(/\s+/);
+      cuerpo+=(cuerpo?'\n\n':'')+palabras.slice(0,palabrasRestantes).join(' ')+'...';
+      break;
     }
-    return t+bajada;
-  }).join('\n\n');
-  state.guion=`Noticias de Misiones Cuatro en dos minutos.\n\n${cuerpo}\n\nEso es todo por este flash. Seguimos informando en Misiones Cuatro.`;
+    cuerpo+=(cuerpo?'\n\n':'')+bloque;
+    palabrasRestantes-=pw;
+  }
+
+  const partes=[intro];
+  if(climaInicio) partes.push(climaInicio);
+  partes.push(cuerpo);
+  if(climaFinal) partes.push(climaFinal);
+  partes.push(cierre);
+
+  state.guion=partes.join('\n\n');
   document.getElementById('guion-area').value=state.guion;
   actualizarStats();irA(2);
 }
