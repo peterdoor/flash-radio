@@ -72,17 +72,7 @@
     transition:all .2s;
   }
   .btn-enorme:hover{background:#a01f24;transform:translateY(-2px);box-shadow:0 8px 40px rgba(193,39,45,.5);}
-  .msg-especial-wrap{margin-top:1.5rem;text-align:left;}
-  .msg-especial-label{font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.6);letter-spacing:1px;margin-bottom:.4rem;}
-  .msg-especial-label span{color:rgba(255,255,255,.3);}
-  .msg-especial-input{
-    width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
-    border-radius:6px;padding:.75rem 1rem;color:white;font-family:var(--sans);
-    font-size:.9rem;outline:none;transition:border .2s;
-  }
-  .msg-especial-input:focus{border-color:var(--rojo);}
-  .msg-especial-input::placeholder{color:rgba(255,255,255,.25);}
-  .msg-especial-hint{font-family:var(--mono);font-size:.6rem;color:rgba(255,255,255,.25);margin-top:.3rem;}
+
   .sources-strip{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-top:1.5rem;}
   .src-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:1px;text-transform:uppercase;padding:.25rem .6rem;border:1px solid #2a2a2a;border-radius:2px;color:#444;}
   .src-tag span{color:var(--verde);margin-right:3px;}
@@ -225,6 +215,8 @@
   <div class="dot-step" id="dot-2">3</div>
   <div class="dot-line" id="line-23"></div>
   <div class="dot-step" id="dot-3">4</div>
+  <div class="dot-line" id="line-34"></div>
+  <div class="dot-step" id="dot-4">5</div>
 </div>
 
 <div class="scroll-area" id="scroll-area">
@@ -243,13 +235,6 @@
         <div class="src-tag" style="border-color:#f5c400;"><span style="color:#f5c400">◉</span>la nación</div>
       </div>
 
-      <div class="msg-especial-wrap">
-        <div class="msg-especial-label">💬 ¿Mensaje especial? <span>(opcional)</span></div>
-        <input type="text" id="msg-especial" class="msg-especial-input"
-          placeholder="Ej: ¡Feliz día de la primavera, Misiones!"
-          maxlength="120">
-        <div class="msg-especial-hint">Aparece al inicio y al final del flash</div>
-      </div>
     </div>
   </div>
 
@@ -273,8 +258,21 @@
     <div class="guion-stats" id="guion-stats">0 palabras</div>
   </div>
 
-  <!-- AUDIO -->
+  <!-- MENSAJE ESPECIAL -->
   <div class="panel" id="panel-3">
+    <div class="panel-title">MENSAJE ESPECIAL</div>
+    <div class="panel-sub">Opcional — aparece al inicio y al final del flash</div>
+    <div class="audio-config" style="margin-bottom:1rem;">
+      <span class="config-label">Al inicio del flash</span>
+      <input type="text" id="msg-inicio" class="select" placeholder="Ej: ¡Feliz día de la primavera, Misiones!" maxlength="150" style="margin-bottom:1rem;">
+      <span class="config-label">Al final del flash</span>
+      <input type="text" id="msg-final" class="select" placeholder="Ej: Los esperamos en misionescuatro.com" maxlength="150">
+    </div>
+    <p style="font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.3);text-align:center;">Dejá vacío si no querés agregar nada</p>
+  </div>
+
+  <!-- AUDIO -->
+  <div class="panel" id="panel-4">
     <div class="panel-title">GENERAR AUDIO</div>
     <div class="panel-sub">Voz + música de fondo</div>
 
@@ -363,13 +361,13 @@ function irA(n){
   document.getElementById('scroll-area').scrollTop=0;
 
   // Dots
-  [0,1,2,3].forEach(i=>{
+  [0,1,2,3,4].forEach(i=>{
     const d=document.getElementById('dot-'+i);
-    d.classList.toggle('active',i===n);
-    d.classList.toggle('done',i<n);
+    if(d){d.classList.toggle('active',i===n);d.classList.toggle('done',i<n);}
   });
-  ['01','12','23'].forEach((pair,i)=>{
-    document.getElementById('line-'+pair).classList.toggle('done',i<n);
+  ['01','12','23','34'].forEach((pair,i)=>{
+    const el=document.getElementById('line-'+pair);
+    if(el) el.classList.toggle('done',i<n);
   });
 
   // Footer
@@ -380,18 +378,19 @@ function irA(n){
   const labels={
     0:'📰 ELEGIR NOTICIAS →',
     1:'✓ ARMAR GUIÓN →',
-    2:'🎙 GENERAR AUDIO →',
-    3:'▶ GENERAR AUDIO',
+    2:'💬 MENSAJE ESPECIAL →',
+    3:'🎙 GENERAR AUDIO →',
+    4:'▶ GENERAR AUDIO',
   };
   main.textContent=labels[n]||'';
 
   if(n===1){
     main.disabled=state.seleccionadas.length<5;
     main.className='btn btn-primary';
-  } else if(n===2){
+  } else if(n===2||n===3){
     main.disabled=false;
     main.className='btn btn-primary';
-  } else if(n===3){
+  } else if(n===4){
     main.disabled=false;
     main.className='btn btn-green-solid';
   } else {
@@ -400,7 +399,7 @@ function irA(n){
   }
 
   // Ocultar footer-main en paso 3 si ya generó audio
-  if(n===3&&document.getElementById('result-audio').classList.contains('v')){
+  if(n===4&&document.getElementById('result-audio').classList.contains('v')){
     main.style.display='none';
   } else {
     main.style.display='';
@@ -408,20 +407,15 @@ function irA(n){
 }
 
 function pasoAtras(){
-  if(state.paso===3){
-    irA(2);
-  } else if(state.paso===2){
-    irA(1);
-  } else if(state.paso===1){
-    irA(0);
-  }
+  if(state.paso>0) irA(state.paso-1);
 }
 
 function accionPrincipal(){
   if(state.paso===0) cargarNoticias();
   else if(state.paso===1) armarGuion();
-  else if(state.paso===2){irA(3);cargarVoces();}
-  else if(state.paso===3) generarAudio();
+  else if(state.paso===2) irA(3);
+  else if(state.paso===3){irA(4);cargarVoces();}
+  else if(state.paso===4) generarAudio();
 }
 
 // RSS
@@ -570,7 +564,7 @@ async function armarGuion(){
   // Combustibles YPF referencia (se actualizan manualmente cuando cambian)
   const nafta_super=1999;
   const gasoil=2099;
-  const combustiblesTexto=`En combustibles, la nafta súper de YPF se ubica en ${nafta_super} pesos el litro y el gasoil en ${gasoil} pesos.`;
+  combustiblesTexto=`En combustibles, la nafta súper de YPF se ubica en ${nafta_super} pesos el litro y el gasoil en ${gasoil} pesos.`;
 
 
 
@@ -589,10 +583,11 @@ async function armarGuion(){
     cuerpo+=(cuerpo?'\n\n':'')+bloque;
   }
 
-  const msgEspecial=document.getElementById('msg-especial').value.trim();
+  const msgInicio=document.getElementById('msg-inicio')?.value.trim()||'';
+  const msgFinal=document.getElementById('msg-final')?.value.trim()||'';
 
   const partes=[intro];
-  if(msgEspecial) partes.push(msgEspecial+'.');
+  if(msgInicio) partes.push(msgInicio+(msgInicio.match(/[.!?]$/)?'':'.'));
   if(climaInicio)partes.push(climaInicio);
   if(dolarTexto)partes.push(dolarTexto);
   partes.push(combustiblesTexto);
@@ -601,13 +596,13 @@ async function armarGuion(){
   partes.push(cuerpo);
   if(climaFinal)partes.push(climaFinal);
   if(dolarTexto)partes.push(dolarTexto);
-  if(msgEspecial) partes.push(msgEspecial+'.');
+  if(msgFinal) partes.push(msgFinal+(msgFinal.match(/[.!?]$/)?'':'.'));
   partes.push(cierre);
 
   state.guion=partes.join('\n\n');
   document.getElementById('guion-area').value=state.guion;
   actualizarStats();
-  irA(2);
+  irA(2); // guion sigue siendo paso 2
 }
 
 function actualizarStats(){
