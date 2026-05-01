@@ -6,46 +6,30 @@
 <title>Flash Radio — Misiones Cuatro</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
-  :root{
-    --rojo:#e8002d;--negro:#0a0a0a;--gris:#1a1a1a;--gris2:#2a2a2a;
-    --blanco:#f0ede8;--amarillo:#f5c400;--verde:#00c853;
-    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--display:'Bebas Neue',sans-serif;
-  }
+  :root{--rojo:#e8002d;--negro:#0a0a0a;--gris:#1a1a1a;--gris2:#2a2a2a;--blanco:#f0ede8;--amarillo:#f5c400;--verde:#00c853;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--display:'Bebas Neue',sans-serif;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--negro);color:var(--blanco);font-family:var(--sans);min-height:100vh;}
-
-  /* HEADER */
   header{background:var(--rojo);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:65px;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--amarillo);}
   .logo{font-family:var(--display);font-size:2rem;letter-spacing:4px;color:white;}
   .logo span{color:var(--amarillo);}
   .reloj{font-family:var(--mono);font-size:1rem;color:rgba(255,255,255,.8);letter-spacing:2px;}
-
-  /* STEPS NAV */
   .steps-nav{display:flex;background:#111;border-bottom:1px solid #222;overflow-x:auto;}
   .step-tab{font-family:var(--mono);font-size:.68rem;letter-spacing:2px;text-transform:uppercase;padding:.9rem 1.4rem;cursor:pointer;border:none;background:none;color:#444;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;}
   .step-tab.active{color:var(--amarillo);border-bottom-color:var(--amarillo);}
   .step-tab.done{color:var(--verde);}
   .step-tab:disabled{cursor:not-allowed;}
-
   main{max-width:900px;margin:0 auto;padding:1.5rem 1.2rem 4rem;}
-
-  /* PANELS */
   .panel{display:none;}
   .panel.active{display:block;animation:fi .3s ease;}
   @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
   .panel-title{font-family:var(--display);font-size:1.6rem;letter-spacing:3px;color:var(--amarillo);margin-bottom:.3rem;}
   .panel-sub{font-family:var(--mono);font-size:.7rem;color:#555;letter-spacing:1px;margin-bottom:1.5rem;}
-
-  /* TURNO SELECTOR */
   .turnos{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin-bottom:1.5rem;}
   @media(max-width:560px){.turnos{grid-template-columns:repeat(2,1fr);}}
   .tbn{background:var(--gris);border:2px solid #2a2a2a;border-radius:5px;padding:.9rem .7rem;cursor:pointer;color:var(--blanco);font-family:var(--display);font-size:1.1rem;letter-spacing:2px;transition:all .15s;width:100%;}
   .tbn:hover{border-color:var(--rojo);}
   .tbn.sel{border-color:var(--amarillo);background:#1c1a00;color:var(--amarillo);}
   .tbn .ticon{display:block;font-size:1.4rem;margin-bottom:.2rem;opacity:.6;}
-
-  /* RSS CONFIG */
   .feeds-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;}
   .feed-item{display:flex;align-items:center;gap:.5rem;background:var(--gris);border:1px solid #2a2a2a;border-radius:4px;padding:.5rem .8rem;}
   .feed-item input[type=checkbox]{accent-color:var(--amarillo);width:16px;height:16px;flex-shrink:0;}
@@ -53,13 +37,10 @@
   .feed-url{font-family:var(--mono);font-size:.62rem;color:#555;flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .feed-del{background:none;border:none;color:#444;cursor:pointer;font-size:1rem;padding:0 .3rem;}
   .feed-del:hover{color:var(--rojo);}
-
   .add-feed{display:flex;gap:.5rem;margin-bottom:1.5rem;}
   .inp{background:#111;border:1px solid #333;border-radius:3px;padding:.5rem .8rem;color:var(--blanco);font-family:var(--mono);font-size:.75rem;flex:1;}
   .inp:focus{outline:none;border-color:var(--amarillo);}
   .inp-name{max-width:140px;}
-
-  /* BTN */
   .btn{font-family:var(--mono);font-size:.72rem;letter-spacing:1.5px;padding:.6rem 1.2rem;border:none;border-radius:3px;cursor:pointer;text-transform:uppercase;transition:all .15s;display:inline-flex;align-items:center;gap:.5rem;}
   .btn:disabled{opacity:.3;cursor:not-allowed;}
   .btn-primary{background:var(--rojo);color:white;}
@@ -70,17 +51,13 @@
   .btn-ghost:hover:not(:disabled){color:var(--amarillo);border-color:var(--amarillo);}
   .btn-green{background:#0a2a0a;color:var(--verde);border:1px solid var(--verde);}
   .btn-green:hover:not(:disabled){background:var(--verde);color:#000;}
-
-  /* NOTICIAS */
   .noticias-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-wrap:wrap;gap:.5rem;}
   .counter{font-family:var(--mono);font-size:.72rem;color:#666;letter-spacing:1px;}
   .counter span{color:var(--amarillo);}
-
   .noticias-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;max-height:420px;overflow-y:auto;padding-right:.3rem;}
   .noticias-list::-webkit-scrollbar{width:4px;}
   .noticias-list::-webkit-scrollbar-track{background:#111;}
   .noticias-list::-webkit-scrollbar-thumb{background:#333;border-radius:2px;}
-
   .noticia-item{background:var(--gris);border:1px solid #2a2a2a;border-radius:4px;padding:.8rem 1rem;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:.8rem;}
   .noticia-item:hover{border-color:#444;}
   .noticia-item.sel{border-color:var(--amarillo);background:#1a1800;}
@@ -90,88 +67,69 @@
   .ni-titulo{font-size:.88rem;line-height:1.45;color:var(--blanco);}
   .ni-desc{font-size:.78rem;color:#666;line-height:1.4;margin-top:.3rem;}
   .ni-loading{text-align:center;font-family:var(--mono);font-size:.75rem;color:#555;padding:2rem;}
-
-  /* GUIÓN */
   .guion-area{width:100%;background:#111;border:1px solid #333;border-radius:4px;padding:1rem;color:var(--blanco);font-family:var(--sans);font-size:.95rem;line-height:1.9;resize:vertical;min-height:280px;}
   .guion-area:focus{outline:none;border-color:var(--amarillo);}
   .guion-stats{font-family:var(--mono);font-size:.68rem;color:#555;letter-spacing:1px;margin-top:.4rem;margin-bottom:1rem;}
-
-  /* AUDIO */
   .audio-config{background:var(--gris);border:1px solid #2a2a2a;border-radius:4px;padding:1.2rem;margin-bottom:1.2rem;}
   .audio-config label{font-family:var(--mono);font-size:.7rem;color:#888;letter-spacing:1px;display:block;margin-bottom:.4rem;}
   .select{background:#111;border:1px solid #333;border-radius:3px;padding:.5rem .8rem;color:var(--blanco);font-family:var(--mono);font-size:.75rem;width:100%;}
   .select:focus{outline:none;border-color:var(--amarillo);}
-
   .progress-wrap{display:none;margin-bottom:1rem;}
   .progress-wrap.v{display:block;}
   .pbar{height:4px;background:#1e1e1e;border-radius:2px;overflow:hidden;margin-bottom:.4rem;}
   .pfill{height:100%;background:var(--rojo);width:0%;transition:width .5s ease;}
   .plabel{font-family:var(--mono);font-size:.7rem;color:#555;letter-spacing:1px;}
-
   .result-audio{background:var(--gris);border:1px solid var(--verde);border-radius:4px;padding:1.2rem;display:none;}
   .result-audio.v{display:block;animation:fi .3s ease;}
   .ra-title{font-family:var(--display);font-size:1.2rem;letter-spacing:3px;color:var(--verde);margin-bottom:1rem;}
-  audio{width:100%;margin-bottom:1rem;filter:invert(1) hue-rotate(180deg);}
+  audio{width:100%;margin-bottom:1rem;}
   .ra-acciones{display:flex;gap:.7rem;flex-wrap:wrap;}
-
-  /* TOAST */
   .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;border:1px solid var(--amarillo);color:var(--amarillo);font-family:var(--mono);font-size:.75rem;padding:.6rem 1.4rem;border-radius:3px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
   .nav-btns{display:flex;gap:.7rem;margin-top:1.5rem;justify-content:flex-end;}
   .sep{height:1px;background:#1e1e1e;margin:1.2rem 0;}
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">FLASH<span>●</span>RADIO</div>
   <div class="reloj" id="reloj">--:--:--</div>
 </header>
-
 <div class="steps-nav">
   <button class="step-tab active" id="tab-0" onclick="irA(0)">1 · TURNO</button>
   <button class="step-tab" id="tab-1" onclick="irA(1)" disabled>2 · NOTICIAS</button>
   <button class="step-tab" id="tab-2" onclick="irA(2)" disabled>3 · GUIÓN</button>
   <button class="step-tab" id="tab-3" onclick="irA(3)" disabled>4 · AUDIO</button>
 </div>
-
 <main>
-
-  <!-- ═══════════════════════════════ PASO 1: TURNO + FEEDS -->
+  <!-- PASO 1 -->
   <div class="panel active" id="panel-0">
     <div class="panel-title">TURNO DEL FLASH</div>
     <div class="panel-sub">Elegí el turno y configurá las fuentes RSS</div>
-
     <div class="turnos">
       <button class="tbn" onclick="selTurno(this,'mañana')"><span class="ticon">🌅</span>MAÑANA</button>
       <button class="tbn" onclick="selTurno(this,'mediodía')"><span class="ticon">☀️</span>MEDIODÍA</button>
       <button class="tbn" onclick="selTurno(this,'tarde')"><span class="ticon">🌆</span>TARDE</button>
       <button class="tbn" onclick="selTurno(this,'noche')"><span class="ticon">🌙</span>NOCHE</button>
     </div>
-
     <div class="sep"></div>
     <div class="panel-title" style="font-size:1.1rem;margin-bottom:.3rem;">FUENTES RSS</div>
     <div class="panel-sub">Activá las fuentes que querés usar</div>
-
     <div class="feeds-list" id="feeds-list"></div>
-
     <div class="add-feed">
       <input class="inp inp-name" id="new-name" placeholder="Nombre" type="text">
       <input class="inp" id="new-url" placeholder="URL del feed RSS" type="text">
       <button class="btn btn-ghost" onclick="addFeed()">+ Agregar</button>
     </div>
-
     <div class="nav-btns">
       <button class="btn btn-primary" id="btn-cargar" onclick="cargarNoticias()" disabled>Cargar noticias →</button>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════ PASO 2: NOTICIAS -->
+  <!-- PASO 2 -->
   <div class="panel" id="panel-1">
     <div class="panel-title">SELECCIONÁ LAS NOTICIAS</div>
     <div class="panel-sub">Elegí entre 5 y 8 noticias para el flash</div>
-
     <div class="noticias-header">
       <div class="counter">Seleccionadas: <span id="sel-count">0</span> / 8</div>
       <div style="display:flex;gap:.5rem;">
@@ -179,134 +137,91 @@
         <button class="btn btn-ghost" onclick="deselAll()">Limpiar</button>
       </div>
     </div>
-
-    <div class="noticias-list" id="noticias-list">
-      <div class="ni-loading">Cargando noticias...</div>
-    </div>
-
+    <div class="noticias-list" id="noticias-list"><div class="ni-loading">Cargando noticias...</div></div>
     <div class="nav-btns">
       <button class="btn btn-ghost" onclick="irA(0)">← Volver</button>
       <button class="btn btn-primary" id="btn-guion" onclick="armarGuion()" disabled>Armar guión →</button>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════ PASO 3: GUIÓN -->
+  <!-- PASO 3 -->
   <div class="panel" id="panel-2">
     <div class="panel-title">GUIÓN DEL FLASH</div>
     <div class="panel-sub">Editá el guión antes de generar el audio</div>
-
     <textarea class="guion-area" id="guion-area" oninput="actualizarStats()"></textarea>
     <div class="guion-stats" id="guion-stats">0 palabras · 0 seg estimados</div>
-
     <div class="nav-btns">
       <button class="btn btn-ghost" onclick="irA(1)">← Volver</button>
-      <button class="btn btn-primary" onclick="irA(3)">Generar audio →</button>
+      <button class="btn btn-primary" onclick="irA(3);cargarVoces()">Generar audio →</button>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════ PASO 4: AUDIO -->
+  <!-- PASO 4 -->
   <div class="panel" id="panel-3">
     <div class="panel-title">GENERAR AUDIO</div>
     <div class="panel-sub">Voz argentina con ElevenLabs + música de fondo</div>
-
     <div class="audio-config">
       <label>API KEY ELEVENLABS</label>
-      <input class="inp" id="eleven-key" type="password" placeholder="sk_..." value="sk_53081740672a6f601d992f95d1e9a2bdc46e77b815686c01" style="margin-bottom:1rem;">
-
-      <label>VOZ</label>
-      <select class="select" id="voice-select" style="margin-bottom:1rem;">
-        <option value="loading">Cargando voces...</option>
-      </select>
-
+      <input class="inp" id="eleven-key" type="password" placeholder="sk_..." style="margin-bottom:1rem;" value="sk_53081740672a6f601d992f95d1e9a2bdc46e77b815686c01">
+      <label>VOZ <button class="btn btn-ghost" style="padding:.2rem .6rem;font-size:.62rem;" onclick="cargarVoces()">↺ Cargar voces</button></label>
+      <select class="select" id="voice-select" style="margin-bottom:1rem;"></select>
       <label>MÚSICA DE FONDO</label>
       <select class="select" id="music-select">
         <option value="none">Sin música</option>
-        <option value="news" selected>Jingle de noticias (generado)</option>
+        <option value="news" selected>Jingle de noticias</option>
         <option value="soft">Fondo suave</option>
       </select>
     </div>
-
     <div class="progress-wrap" id="pwrap">
       <div class="pbar"><div class="pfill" id="pfill"></div></div>
       <div class="plabel" id="plabel">Iniciando...</div>
     </div>
-
     <div class="result-audio" id="result-audio">
       <div class="ra-title">✓ FLASH LISTO</div>
       <audio id="player" controls></audio>
       <div class="ra-acciones">
-        <button class="btn btn-yellow" onclick="descargar()">⬇ DESCARGAR MP3</button>
-        <button class="btn btn-ghost" onclick="irA(0)">↺ NUEVO FLASH</button>
+        <button class="btn btn-yellow" onclick="descargar()">⬇ DESCARGAR AUDIO</button>
+        <button class="btn btn-ghost" onclick="nuevoFlash()">↺ NUEVO FLASH</button>
       </div>
     </div>
-
     <div class="nav-btns" id="audio-nav">
       <button class="btn btn-ghost" onclick="irA(2)">← Volver</button>
       <button class="btn btn-green" id="btn-generar" onclick="generarAudio()">▶ GENERAR AUDIO</button>
     </div>
   </div>
-
 </main>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════════════════
-// ESTADO GLOBAL
-// ══════════════════════════════════════════════════════════
-const state = {
-  turno: '',
-  feeds: [
-    { name:'Misiones Cuatro', url:'https://misionescuatro.com/feed/', on:true },
-    { name:'Infobae Economía', url:'https://www.infobae.com/economia/rss/', on:true },
-    { name:'Infobae', url:'https://www.infobae.com/feeds/rss/', on:false },
-    { name:'La Nación', url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/', on:false },
-  ],
-  noticias: [],       // todas las cargadas
-  seleccionadas: [],  // índices seleccionados
-  guion: '',
-  audioBlob: null,
-  voiceId: '',
-};
+const state={turno:'',feeds:[
+  {name:'Misiones Cuatro',url:'https://misionescuatro.com/feed/',on:true},
+  {name:'Infobae Economía',url:'https://www.infobae.com/economia/rss/',on:true},
+  {name:'Infobae',url:'https://www.infobae.com/feeds/rss/',on:false},
+  {name:'La Nación',url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/',on:false},
+],noticias:[],seleccionadas:[],guion:'',audioBlob:null};
 
-// ══════════════════════════════════════════════════════════
-// RELOJ
-// ══════════════════════════════════════════════════════════
 function tick(){const n=new Date();document.getElementById('reloj').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');}
 setInterval(tick,1000);tick();
 
-// ══════════════════════════════════════════════════════════
-// NAVEGACIÓN
-// ══════════════════════════════════════════════════════════
 function irA(n){
   document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));
   document.querySelectorAll('.step-tab').forEach((t,i)=>t.classList.toggle('active',i===n));
 }
 
-// ══════════════════════════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════════════════════════
 function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
-// ══════════════════════════════════════════════════════════
-// PASO 1: TURNO + FEEDS
-// ══════════════════════════════════════════════════════════
-function selTurno(btn, t){
+function selTurno(btn,t){
   document.querySelectorAll('.tbn').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-  state.turno=t;
-  checkStep1();
+  btn.classList.add('sel');state.turno=t;checkStep1();
 }
 
 function checkStep1(){
-  const feedsOn=state.feeds.some(f=>f.on);
-  document.getElementById('btn-cargar').disabled=!(state.turno && feedsOn);
+  document.getElementById('btn-cargar').disabled=!(state.turno&&state.feeds.some(f=>f.on));
 }
 
 function renderFeeds(){
-  const el=document.getElementById('feeds-list');
-  el.innerHTML=state.feeds.map((f,i)=>`
+  document.getElementById('feeds-list').innerHTML=state.feeds.map((f,i)=>`
     <div class="feed-item">
       <input type="checkbox" ${f.on?'checked':''} onchange="toggleFeed(${i},this.checked)">
       <span class="feed-name">${f.name}</span>
@@ -322,54 +237,40 @@ function addFeed(){
   const name=document.getElementById('new-name').value.trim();
   const url=document.getElementById('new-url').value.trim();
   if(!name||!url){toast('Completá nombre y URL');return;}
-  if(!url.startsWith('http')){toast('URL inválida');return;}
   state.feeds.push({name,url,on:true});
   document.getElementById('new-name').value='';
   document.getElementById('new-url').value='';
   renderFeeds();
 }
 
-// ══════════════════════════════════════════════════════════
-// PASO 2: CARGAR NOTICIAS RSS
-// ══════════════════════════════════════════════════════════
 async function fetchRSS(feed){
   try{
-    const proxyUrl='/api/rss?url='+encodeURIComponent(feed.url);
-    const r=await fetch(proxyUrl);
+    const r=await fetch('/api/rss?url='+encodeURIComponent(feed.url));
     if(!r.ok) throw new Error(r.status);
     const txt=await r.text();
     const xml=new DOMParser().parseFromString(txt,'text/xml');
     return Array.from(xml.querySelectorAll('item')).slice(0,15).map(item=>({
-      titulo: item.querySelector('title')?.textContent?.trim()||'',
-      desc: (item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,180),
-      link: item.querySelector('link')?.textContent?.trim()||'',
-      fuente: feed.name,
+      titulo:item.querySelector('title')?.textContent?.trim()||'',
+      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,180),
+      fuente:feed.name,
     })).filter(n=>n.titulo.length>5);
-  }catch(e){
-    console.warn('RSS error',feed.name,e);
-    return [];
-  }
+  }catch(e){console.warn('RSS',feed.name,e);return[];}
 }
 
 async function cargarNoticias(){
   irA(1);
   document.getElementById('tab-1').disabled=false;
-  document.getElementById('noticias-list').innerHTML='<div class="ni-loading">Cargando noticias de las fuentes seleccionadas...</div>';
-  state.noticias=[];
-  state.seleccionadas=[];
-
+  document.getElementById('noticias-list').innerHTML='<div class="ni-loading">Cargando noticias...</div>';
+  state.noticias=[];state.seleccionadas=[];
   const feedsOn=state.feeds.filter(f=>f.on);
-  const resultados=await Promise.all(feedsOn.map(fetchRSS));
-  state.noticias=resultados.flat();
-
-  // Deduplicar por título
+  const res=await Promise.all(feedsOn.map(fetchRSS));
+  state.noticias=res.flat();
   const vistas=new Set();
   state.noticias=state.noticias.filter(n=>{
     const k=n.titulo.slice(0,50).toLowerCase();
     if(vistas.has(k)) return false;
-    vistas.add(k); return true;
+    vistas.add(k);return true;
   });
-
   renderNoticias();
 }
 
@@ -377,10 +278,7 @@ function recargar(){cargarNoticias();}
 
 function renderNoticias(){
   const el=document.getElementById('noticias-list');
-  if(!state.noticias.length){
-    el.innerHTML='<div class="ni-loading">No se encontraron noticias. Revisá las fuentes RSS.</div>';
-    return;
-  }
+  if(!state.noticias.length){el.innerHTML='<div class="ni-loading">No se encontraron noticias. Revisá las fuentes RSS.</div>';return;}
   el.innerHTML=state.noticias.map((n,i)=>`
     <div class="noticia-item ${state.seleccionadas.includes(i)?'sel':''}" onclick="toggleNoticia(${i})">
       <div class="ni-check">${state.seleccionadas.includes(i)?'✓':''}</div>
@@ -395,12 +293,8 @@ function renderNoticias(){
 
 function toggleNoticia(i){
   const idx=state.seleccionadas.indexOf(i);
-  if(idx>-1){
-    state.seleccionadas.splice(idx,1);
-  } else {
-    if(state.seleccionadas.length>=8){toast('Máximo 8 noticias');return;}
-    state.seleccionadas.push(i);
-  }
+  if(idx>-1){state.seleccionadas.splice(idx,1);}
+  else{if(state.seleccionadas.length>=8){toast('Máximo 8 noticias');return;}state.seleccionadas.push(i);}
   renderNoticias();
 }
 
@@ -410,130 +304,93 @@ function actualizarCounter(){
   const n=state.seleccionadas.length;
   document.getElementById('sel-count').textContent=n;
   document.getElementById('btn-guion').disabled=n<5;
-  if(n>=5) document.getElementById('tab-2').disabled=false;
+  if(n>=5){document.getElementById('tab-2').disabled=false;document.getElementById('tab-3').disabled=false;}
 }
 
-// ══════════════════════════════════════════════════════════
-// PASO 3: ARMAR GUIÓN
-// ══════════════════════════════════════════════════════════
 function armarGuion(){
   const fecha=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const hora=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  const icons={'mañana':'🌅','mediodía':'☀️','tarde':'🌆','noche':'🌙'};
-
   const noticias=state.seleccionadas.map(i=>state.noticias[i]);
-
-  // Plantilla de guión radial
-  const cuerpo=noticias.map(n=>{
-    // Limpiar título y construir oración
-    let titulo=n.titulo.replace(/[""]/g,'"').trim();
-    if(!titulo.endsWith('.')) titulo+='.';
-    return titulo;
-  }).join('\n\n');
-
-  const guion=`Flash informativo de Misiones Cuatro, ${hora} del ${fecha}.\n\n${cuerpo}\n\nEso es todo por este flash. Seguimos informando en Misiones Cuatro.`;
-
-  state.guion=guion;
-  document.getElementById('guion-area').value=guion;
+  const cuerpo=noticias.map(n=>{let t=n.titulo.trim();if(!t.endsWith('.'))t+='.';return t;}).join('\n\n');
+  state.guion=`Flash informativo de Misiones Cuatro, ${hora} del ${fecha}.\n\n${cuerpo}\n\nEso es todo por este flash. Seguimos informando en Misiones Cuatro.`;
+  document.getElementById('guion-area').value=state.guion;
   actualizarStats();
   irA(2);
-  document.getElementById('tab-2').disabled=false;
-  document.getElementById('tab-3').disabled=false;
 }
 
 function actualizarStats(){
   const txt=document.getElementById('guion-area').value;
   state.guion=txt;
   const palabras=txt.trim().split(/\s+/).filter(Boolean).length;
-  const segs=Math.round(palabras/2.5); // ~2.5 palabras/seg locutor
-  const min=Math.floor(segs/60), sec=segs%60;
+  const segs=Math.round(palabras/2.5);
+  const min=Math.floor(segs/60),sec=segs%60;
   document.getElementById('guion-stats').textContent=`${palabras} palabras · ~${min>0?min+'m ':''} ${sec}s al aire`;
 }
 
-// ══════════════════════════════════════════════════════════
-// PASO 4: AUDIO CON ELEVENLABS
-// ══════════════════════════════════════════════════════════
+// VOCES - hardcodeadas + intento de carga dinámica
+const VOCES_DEFAULT=[
+  {id:'pNInz6obpgDQGcFmaJgB',name:'Arnold — grave'},
+  {id:'AZnzlk1XvdvUeBnXmlld',name:'Adam — neutro'},
+  {id:'ErXwobaYiN019PkySvjV',name:'Antoni — suave'},
+  {id:'TX3LPaxmHKxFdv7VOQHJ',name:'Liam'},
+  {id:'VR6AewLTigWG4xSOukaG',name:'Arnold 2'},
+  {id:'onwK4e9ZLuTAKqWW03F9',name:'Daniel'},
+  {id:'N2lVS1w4EtoT3dr4eOWO',name:'Callum'},
+];
+
 async function cargarVoces(){
+  const sel=document.getElementById('voice-select');
   const key=document.getElementById('eleven-key').value.trim();
-  if(!key){return;}
+
+  // Siempre mostrar defaults primero
+  sel.innerHTML=VOCES_DEFAULT.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+
+  if(!key) return;
+
   try{
-    const r=await fetch('https://api.elevenlabs.io/v1/voices',{headers:{'xi-api-key':key}});
-    const d=await r.json();
-    const sel=document.getElementById('voice-select');
-    sel.innerHTML='';
-
-    // Priorizar voces argentinas/latinas
-    const voces=d.voices||[];
-    const ordenadas=[
-      ...voces.filter(v=>v.name.toLowerCase().includes('leonardo')),
-      ...voces.filter(v=>v.labels?.accent?.toLowerCase().includes('argentin')),
-      ...voces.filter(v=>v.name.toLowerCase().includes('argentin')),
-      ...voces.filter(v=>v.labels?.language?.toLowerCase().includes('spanish')||v.labels?.language?.toLowerCase().includes('español')),
-      ...voces,
-    ];
-
-    // Deduplicar
-    const vistas=new Set();
-    const unicas=ordenadas.filter(v=>{if(vistas.has(v.voice_id)) return false;vistas.add(v.voice_id);return true;});
-
-    unicas.slice(0,30).forEach(v=>{
-      const opt=document.createElement('option');
-      opt.value=v.voice_id;
-      const accent=v.labels?.accent||v.labels?.language||'';
-      opt.textContent=v.name+(accent?` (${accent})`:'');
-      sel.appendChild(opt);
+    const r=await fetch('https://api.elevenlabs.io/v1/voices',{
+      headers:{'xi-api-key':key,'Content-Type':'application/json'}
     });
-
-    state.voiceId=unicas[0]?.voice_id||'';
-    toast('Voces cargadas ✓');
+    if(!r.ok) throw new Error('Status '+r.status);
+    const d=await r.json();
+    const voces=d.voices||[];
+    if(voces.length){
+      sel.innerHTML='';
+      // Priorizar argentinas/latinas
+      const orden=[
+        ...voces.filter(v=>v.name.toLowerCase().includes('leonardo')),
+        ...voces.filter(v=>(v.labels?.accent||'').toLowerCase().includes('argentin')),
+        ...voces.filter(v=>v.name.toLowerCase().includes('argentin')),
+        ...voces,
+      ];
+      const vistos=new Set();
+      orden.filter(v=>{if(vistos.has(v.voice_id))return false;vistos.add(v.voice_id);return true;})
+        .slice(0,30).forEach(v=>{
+          const o=document.createElement('option');
+          o.value=v.voice_id;
+          const acc=v.labels?.accent||v.labels?.language||'';
+          o.textContent=v.name+(acc?' ('+acc+')':'');
+          sel.appendChild(o);
+        });
+      toast('✓ '+voces.length+' voces cargadas');
+    }
   }catch(e){
-    toast('Error al cargar voces: '+e.message,4000);
+    toast('Usando voces por defecto ('+e.message+')',4000);
   }
 }
 
-// Música generada con Web Audio API
-function generarMusicaNews(ctx, duracion){
-  const master=ctx.createGain();
-  master.gain.value=0.07;
-
-  const seq=[
-    [1046,0.0,0.10],[1318,0.13,0.10],[1568,0.27,0.16],[1318,0.47,0.10],
-    [1046,0.61,0.10],[1568,0.75,0.22],[1318,1.02,0.10],[1046,1.16,0.10],
-    [1175,1.30,0.16],[1046,1.50,0.10],[1568,1.65,0.30],
-  ];
-
-  function tocar(offset){
-    seq.forEach(([f,t,d])=>{
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.type='sine';o.frequency.value=f;
-      const st=ctx.currentTime+offset+t;
-      g.gain.setValueAtTime(0,st);
-      g.gain.linearRampToValueAtTime(0.7,st+0.015);
-      g.gain.linearRampToValueAtTime(0,st+d);
-      o.connect(g);g.connect(master);
-      o.start(st);o.stop(st+d+0.05);
-    });
-  }
-
-  // Jingle al inicio y cada ~20s
-  for(let t=0;t<duracion;t+=20) tocar(t);
-
-  // Pad suave de fondo
-  const pad=ctx.createOscillator(),padG=ctx.createGain();
-  pad.type='triangle';pad.frequency.value=196;padG.gain.value=0.012;
-  pad.connect(padG);padG.connect(master);
-  pad.start();pad.stop(ctx.currentTime+duracion+2);
-
+function generarMusicaNews(ctx,dur){
+  const master=ctx.createGain();master.gain.value=0.07;
+  const seq=[[1046,0,.10],[1318,.13,.10],[1568,.27,.16],[1318,.47,.10],[1046,.61,.10],[1568,.75,.22],[1318,1.02,.10],[1046,1.16,.10],[1175,1.30,.16],[1046,1.50,.10],[1568,1.65,.30]];
+  function tocar(off){seq.forEach(([f,t,d])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;const st=ctx.currentTime+off+t;g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.7,st+.015);g.gain.linearRampToValueAtTime(0,st+d);o.connect(g);g.connect(master);o.start(st);o.stop(st+d+.05);});}
+  for(let t=0;t<dur;t+=20)tocar(t);
+  const pad=ctx.createOscillator(),pg=ctx.createGain();pad.type='triangle';pad.frequency.value=196;pg.gain.value=.012;pad.connect(pg);pg.connect(master);pad.start();pad.stop(ctx.currentTime+dur+2);
   return master;
 }
 
-function generarMusicaSoft(ctx, duracion){
-  const master=ctx.createGain();
-  master.gain.value=0.05;
-  const pad=ctx.createOscillator(),padG=ctx.createGain();
-  pad.type='sine';pad.frequency.value=220;padG.gain.value=0.4;
-  pad.connect(padG);padG.connect(master);
-  pad.start();pad.stop(ctx.currentTime+duracion+2);
+function generarMusicaSoft(ctx,dur){
+  const master=ctx.createGain();master.gain.value=.04;
+  const pad=ctx.createOscillator(),pg=ctx.createGain();pad.type='sine';pad.frequency.value=220;pg.gain.value=.4;pad.connect(pg);pg.connect(master);pad.start();pad.stop(ctx.currentTime+dur+2);
   return master;
 }
 
@@ -548,7 +405,7 @@ async function generarAudio(){
   const key=document.getElementById('eleven-key').value.trim();
   if(!key){toast('Ingresá la API key de ElevenLabs');return;}
   const voiceId=document.getElementById('voice-select').value;
-  if(!voiceId||voiceId==='loading'){toast('Seleccioná una voz');return;}
+  if(!voiceId){toast('Seleccioná una voz');return;}
   const guion=document.getElementById('guion-area').value.trim();
   if(!guion){toast('El guión está vacío');return;}
 
@@ -556,78 +413,53 @@ async function generarAudio(){
   document.getElementById('result-audio').classList.remove('v');
 
   try{
-    // 1. Generar voz con ElevenLabs
     setProg(20,'Generando voz con ElevenLabs...');
     const rVoz=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,{
       method:'POST',
       headers:{'xi-api-key':key,'Content-Type':'application/json','Accept':'audio/mpeg'},
-      body:JSON.stringify({
-        text:guion,
-        model_id:'eleven_multilingual_v2',
-        voice_settings:{stability:0.45,similarity_boost:0.82,style:0.3,use_speaker_boost:true}
-      })
+      body:JSON.stringify({text:guion,model_id:'eleven_multilingual_v2',voice_settings:{stability:.45,similarity_boost:.82,style:.3,use_speaker_boost:true}})
     });
-    if(!rVoz.ok) throw new Error('ElevenLabs error: '+rVoz.status);
+    if(!rVoz.ok) throw new Error('ElevenLabs error '+rVoz.status);
     const vozBlob=await rVoz.blob();
 
-    setProg(60,'Mezclando con música de fondo...');
-    await sleep(300);
-
     const musicType=document.getElementById('music-select').value;
+    setProg(60,'Mezclando audio...');
+    await sleep(200);
 
     if(musicType==='none'){
-      // Sin música: usar directo
       state.audioBlob=vozBlob;
     } else {
-      // Mezclar voz + música con Web Audio API + OfflineAudioContext
       const vozUrl=URL.createObjectURL(vozBlob);
-      const vozArrayBuffer=await fetch(vozUrl).then(r=>r.arrayBuffer());
+      const vozBuf=await fetch(vozUrl).then(r=>r.arrayBuffer());
       URL.revokeObjectURL(vozUrl);
-
       const tmpCtx=new AudioContext();
-      const vozDecoded=await tmpCtx.decodeAudioData(vozArrayBuffer);
-      tmpCtx.close();
-
-      const duracion=vozDecoded.duration+2;
-      const sampleRate=44100;
-      const offCtx=new OfflineAudioContext(2,Math.ceil(duracion*sampleRate),sampleRate);
-
-      // Voz
-      const vozSrc=offCtx.createBufferSource();
-      vozSrc.buffer=vozDecoded;
-      const vozGain=offCtx.createGain();
-      vozGain.gain.value=1.0;
-      vozSrc.connect(vozGain);
-      vozGain.connect(offCtx.destination);
-      vozSrc.start(1); // 1s de música antes de la voz
-
-      // Música
-      const musicNode=musicType==='news'
-        ? generarMusicaNews(offCtx,duracion)
-        : generarMusicaSoft(offCtx,duracion);
-      musicNode.connect(offCtx.destination);
-
-      // Fade out al final
-      vozGain.gain.setValueAtTime(1,duracion-1.5);
-      vozGain.gain.linearRampToValueAtTime(0,duracion);
-
-      setProg(75,'Renderizando audio final...');
+      const vozDec=await tmpCtx.decodeAudioData(vozBuf);
+      await tmpCtx.close();
+      const dur=vozDec.duration+3;
+      const offCtx=new OfflineAudioContext(2,Math.ceil(dur*44100),44100);
+      const src=offCtx.createBufferSource();
+      src.buffer=vozDec;
+      const vg=offCtx.createGain();
+      vg.gain.value=1;
+      src.connect(vg);vg.connect(offCtx.destination);
+      src.start(1.2);
+      vg.gain.setValueAtTime(1,dur-1.5);
+      vg.gain.linearRampToValueAtTime(0,dur);
+      const music=musicType==='news'?generarMusicaNews(offCtx,dur):generarMusicaSoft(offCtx,dur);
+      music.connect(offCtx.destination);
+      setProg(80,'Renderizando...');
       const rendered=await offCtx.startRendering();
-
-      // Convertir AudioBuffer a WAV blob
       state.audioBlob=audioBufferToWav(rendered);
     }
 
-    setProg(100,'¡Flash listo!');
+    setProg(100,'¡Listo!');
     await sleep(400);
     hideProg();
-
-    // Mostrar resultado
     const url=URL.createObjectURL(state.audioBlob);
     document.getElementById('player').src=url;
     document.getElementById('result-audio').classList.add('v');
     document.getElementById('audio-nav').style.display='none';
-    toast('Audio generado ✓');
+    toast('✓ Flash generado');
 
   }catch(e){
     hideProg();
@@ -637,56 +469,39 @@ async function generarAudio(){
   document.getElementById('btn-generar').disabled=false;
 }
 
-// Convertir AudioBuffer a WAV
-function audioBufferToWav(buffer){
-  const numCh=buffer.numberOfChannels;
-  const len=buffer.length;
-  const sampleRate=buffer.sampleRate;
-  const wavLen=44+len*numCh*2;
-  const arrayBuf=new ArrayBuffer(wavLen);
-  const view=new DataView(arrayBuf);
-  const write=(o,s)=>{for(let i=0;i<s.length;i++) view.setUint8(o+i,s.charCodeAt(i));};
-  write(0,'RIFF');view.setUint32(4,wavLen-8,true);write(8,'WAVE');
-  write(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);
-  view.setUint16(22,numCh,true);view.setUint32(24,sampleRate,true);
-  view.setUint32(28,sampleRate*numCh*2,true);view.setUint16(32,numCh*2,true);
-  view.setUint16(34,16,true);write(36,'data');view.setUint32(40,len*numCh*2,true);
-  let offset=44;
-  for(let i=0;i<len;i++){
-    for(let ch=0;ch<numCh;ch++){
-      const s=Math.max(-1,Math.min(1,buffer.getChannelData(ch)[i]));
-      view.setInt16(offset,s<0?s*0x8000:s*0x7FFF,true);
-      offset+=2;
-    }
-  }
-  return new Blob([arrayBuf],{type:'audio/wav'});
+function audioBufferToWav(buf){
+  const nc=buf.numberOfChannels,len=buf.length,sr=buf.sampleRate;
+  const ab=new ArrayBuffer(44+len*nc*2),v=new DataView(ab);
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF');v.setUint32(4,36+len*nc*2,true);w(8,'WAVE');w(12,'fmt ');
+  v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,nc,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*nc*2,true);v.setUint16(32,nc*2,true);
+  v.setUint16(34,16,true);w(36,'data');v.setUint32(40,len*nc*2,true);
+  let off=44;
+  for(let i=0;i<len;i++)for(let c=0;c<nc;c++){const s=Math.max(-1,Math.min(1,buf.getChannelData(c)[i]));v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;}
+  return new Blob([ab],{type:'audio/wav'});
 }
 
 function descargar(){
-  if(!state.audioBlob) return;
+  if(!state.audioBlob)return;
   const fecha=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
   const ext=state.audioBlob.type.includes('wav')?'wav':'mp3';
   const url=URL.createObjectURL(state.audioBlob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`flash-${state.turno||'radio'}-${fecha}.${ext}`;a.click();
+  const a=document.createElement('a');a.href=url;a.download=`flash-${state.turno||'radio'}-${fecha}.${ext}`;a.click();
   setTimeout(()=>URL.revokeObjectURL(url),5000);
   toast('Descargando ✓');
 }
 
-// ══════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════
+function nuevoFlash(){
+  state.seleccionadas=[];state.guion='';state.audioBlob=null;
+  document.getElementById('result-audio').classList.remove('v');
+  document.getElementById('audio-nav').style.display='';
+  document.getElementById('guion-area').value='';
+  irA(0);
+}
+
 renderFeeds();
-
-document.getElementById('eleven-key').addEventListener('change', cargarVoces);
-
-// Cargar voces inmediatamente al abrir paso 4
-document.querySelectorAll('.step-tab')[3].addEventListener('click', ()=>{
-  if(document.getElementById('voice-select').options[0]?.value==='loading'){
-    cargarVoces();
-  }
-});
-
+// Cargar voces al iniciar
 window.addEventListener('load', cargarVoces);
 </script>
 </body>
