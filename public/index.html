@@ -141,8 +141,9 @@
       <select class="select" id="voice-select" style="margin-bottom:1rem;"></select>
       <label>MÚSICA DE FONDO</label>
       <select class="select" id="music-select">
-        <option value="news" selected>Jingle de noticias</option>
-        <option value="soft">Fondo suave</option>
+        <option value="eleven" selected>🎵 Música IA (ElevenLabs)</option>
+        <option value="news">Jingle de noticias (local)</option>
+        <option value="soft">Fondo suave (local)</option>
         <option value="none">Sin música</option>
       </select>
     </div>
@@ -258,18 +259,52 @@ function actualizarCounter(){
 async function armarGuion(){
   const noticias=state.seleccionadas.map(i=>state.noticias[i]);
 
-  // Clima de Posadas
-  let climaInicio='', climaFinal='';
-  try{
-    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-27.3671&longitude=-55.8961&daily=temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&forecast_days=1');
-    const d=await r.json();
-    const tmax=Math.round(d.daily.temperature_2m_max[0]);
-    const tmin=Math.round(d.daily.temperature_2m_min[0]);
-    climaInicio=`Para hoy en Misiones se espera una mínima de ${tmin} grados y una máxima de ${tmax} grados.`;
-    climaFinal=`Recordamos que para hoy se esperan temperaturas de entre ${tmin} y ${tmax} grados en Misiones.`;
-  }catch(e){ console.warn('Clima no disponible',e); }
+  // Clima + Dólar en paralelo
+  let climaInicio='', climaFinal='', dolarTexto='';
 
-  // Armar bloques de noticias
+  await Promise.all([
+    // Clima Posadas (Open-Meteo, gratis)
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=-27.3671&longitude=-55.8961&daily=temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&forecast_days=1')
+      .then(r=>r.json())
+      .then(d=>{
+        const tmax=Math.round(d.daily.temperature_2m_max[0]);
+        const tmin=Math.round(d.daily.temperature_2m_min[0]);
+        climaInicio=`Para hoy en Misiones se espera una mínima de ${tmin} grados y una máxima de ${tmax} grados.`;
+        climaFinal=`Recordamos que para hoy se esperan temperaturas de entre ${tmin} y ${tmax} grados en Misiones.`;
+      }).catch(e=>console.warn('Clima no disponible',e)),
+
+    // Dólar (API pública DolarApi)
+    fetch('https://dolarapi.com/v1/dolares')
+      .then(r=>r.json())
+      .then(d=>{
+        const oficial=d.find(x=>x.casa==='oficial');
+        const blue=d.find(x=>x.casa==='blue');
+        const mep=d.find(x=>x.casa==='bolsa');
+        const ccl=d.find(x=>x.casa==='contadoconliqui');
+        const partes=[];
+        if(oficial) partes.push(`el oficial a ${oficial.venta} pesos`);
+        if(blue) partes.push(`el blue a ${blue.venta}`);
+        if(mep) partes.push(`el MEP a ${Math.round(mep.venta)}`);
+        if(ccl) partes.push(`el contado con liqui a ${Math.round(ccl.venta)}`);
+        if(partes.length) dolarTexto=`En materia cambiaria, ${partes.join(', ')}.`;
+      }).catch(e=>console.warn('Dólar no disponible',e)),
+  ]);
+
+  // Armar bloques - cortar SOLO por oraciones completas
+  function cortarPorOraciones(texto, maxPalabras){
+    // Dividir en oraciones
+    const oraciones=texto.match(/[^.!?]+[.!?]+/g)||[texto];
+    let resultado='';
+    let palabras=0;
+    for(const o of oraciones){
+      const pw=o.trim().split(/\s+/).length;
+      if(palabras+pw>maxPalabras) break; // nunca cortar a mitad
+      resultado+=o;
+      palabras+=pw;
+    }
+    return resultado.trim();
+  }
+
   const bloques=noticias.map(n=>{
     let t=n.titulo.trim();
     if(!t.match(/[.?!]$/))t+='.';
@@ -278,30 +313,32 @@ async function armarGuion(){
     return t+'\n'+bajada;
   });
 
-  // Ajustar a ~280 palabras (2 minutos a 2.8 palabras/seg)
+  // Meta: ~280 palabras totales
   const META_PALABRAS=280;
   const intro='Noticias de Misiones Cuatro en dos minutos.';
   const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
-  const fijas=[intro, climaInicio, cierre, climaFinal].join(' ');
+  const fijas=[intro, climaInicio, dolarTexto, climaFinal, cierre].join(' ');
   const palabrasFijas=fijas.split(/\s+/).filter(Boolean).length;
   let palabrasRestantes=META_PALABRAS-palabrasFijas;
 
   let cuerpo='';
   for(const bloque of bloques){
-    const pw=bloque.split(/\s+/).filter(Boolean).length;
     if(palabrasRestantes<=0) break;
-    if(pw>palabrasRestantes){
-      // Truncar el bloque para no pasarse
-      const palabras=bloque.split(/\s+/);
-      cuerpo+=(cuerpo?'\n\n':'')+palabras.slice(0,palabrasRestantes).join(' ')+'...';
+    const pw=bloque.split(/\s+/).filter(Boolean).length;
+    if(pw<=palabrasRestantes){
+      cuerpo+=(cuerpo?'\n\n':'')+bloque;
+      palabrasRestantes-=pw;
+    } else {
+      // Cortar solo por oraciones completas
+      const recortado=cortarPorOraciones(bloque, palabrasRestantes);
+      if(recortado) cuerpo+=(cuerpo?'\n\n':'')+recortado;
       break;
     }
-    cuerpo+=(cuerpo?'\n\n':'')+bloque;
-    palabrasRestantes-=pw;
   }
 
   const partes=[intro];
   if(climaInicio) partes.push(climaInicio);
+  if(dolarTexto) partes.push(dolarTexto);
   partes.push(cuerpo);
   if(climaFinal) partes.push(climaFinal);
   partes.push(cierre);
@@ -347,6 +384,21 @@ async function cargarVoces(){
   }catch(e){toast('Voces por defecto cargadas',2000);}
 }
 
+async function generarMusicaElevenLabs(){
+  // Genera jingle de noticias con ElevenLabs Sound Effects
+  const r=await fetch('https://api.elevenlabs.io/v1/sound-generation',{
+    method:'POST',
+    headers:{'xi-api-key':ELEVEN_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      text:'Upbeat news broadcast intro jingle, professional radio, energetic, trumpet fanfare, 30 seconds',
+      duration_seconds:30,
+      prompt_influence:0.5
+    })
+  });
+  if(!r.ok) throw new Error('ElevenLabs música: '+r.status);
+  return await r.arrayBuffer();
+}
+
 function generarMusicaNews(ctx,dur){
   const master=ctx.createGain();master.gain.value=0.06;
   const seq=[[1046,0,.10],[1318,.13,.10],[1568,.27,.16],[1318,.47,.10],[1046,.61,.10],[1568,.75,.22],[1318,1.02,.10],[1046,1.16,.10],[1175,1.30,.16],[1046,1.50,.10],[1568,1.65,.30]];
@@ -383,21 +435,48 @@ async function generarAudio(){
     const musicType=document.getElementById('music-select').value;
     setProg(65,'Mezclando audio...');
     await sleep(200);
+
     if(musicType==='none'){
-      state.audioBlob=vozBlob;
+      state.audioBlob=new Blob([await vozBlob.arrayBuffer()],{type:'audio/mpeg'});
     } else {
       const vozBuf=await fetch(URL.createObjectURL(vozBlob)).then(r=>r.arrayBuffer());
       const tmpCtx=new AudioContext();
-      const vozDec=await tmpCtx.decodeAudioData(vozBuf);
+      const vozDec=await tmpCtx.decodeAudioData(vozBuf.slice(0));
       await tmpCtx.close();
       const dur=vozDec.duration+3;
       const offCtx=new OfflineAudioContext(2,Math.ceil(dur*44100),44100);
+
+      // Voz
       const src=offCtx.createBufferSource();src.buffer=vozDec;
       const vg=offCtx.createGain();vg.gain.value=1;
-      src.connect(vg);vg.connect(offCtx.destination);src.start(1.2);
+      src.connect(vg);vg.connect(offCtx.destination);src.start(1.5);
       vg.gain.setValueAtTime(1,dur-1.5);vg.gain.linearRampToValueAtTime(0,dur);
-      const music=musicType==='news'?generarMusicaNews(offCtx,dur):generarMusicaSoft(offCtx,dur);
-      music.connect(offCtx.destination);
+
+      // Música
+      if(musicType==='eleven'){
+        setProg(70,'Generando música con IA...');
+        try{
+          const musicBuf=await generarMusicaElevenLabs();
+          const musicDec=await offCtx.decodeAudioData(musicBuf);
+          const musicSrc=offCtx.createBufferSource();
+          musicSrc.buffer=musicDec;
+          musicSrc.loop=true;
+          const mg=offCtx.createGain();mg.gain.value=0.12;
+          // Fade out musica al final
+          mg.gain.setValueAtTime(0.12,dur-2);
+          mg.gain.linearRampToValueAtTime(0,dur);
+          musicSrc.connect(mg);mg.connect(offCtx.destination);
+          musicSrc.start(0);
+        }catch(e){
+          console.warn('Música ElevenLabs falló, usando local:',e);
+          generarMusicaNews(offCtx,dur).connect(offCtx.destination);
+        }
+      } else if(musicType==='news'){
+        generarMusicaNews(offCtx,dur).connect(offCtx.destination);
+      } else if(musicType==='soft'){
+        generarMusicaSoft(offCtx,dur).connect(offCtx.destination);
+      }
+
       setProg(85,'Renderizando...');
       const rendered=await offCtx.startRendering();
       state.audioBlob=audioBufferToWav(rendered);
@@ -425,45 +504,17 @@ function audioBufferToWav(buf){
   return new Blob([ab],{type:'audio/wav'});
 }
 
-async function descargar(){
+function descargar(){
   if(!state.audioBlob)return;
   const fecha=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
-  const nombre=`flash-misiones-${fecha}.mp3`;
-
-  toast('Convirtiendo a MP3...');
-  document.getElementById('btn-dl').disabled=true;
-
-  try{
-    // Convertir blob a base64
-    const arrayBuf=await state.audioBlob.arrayBuffer();
-    const base64=btoa(String.fromCharCode(...new Uint8Array(arrayBuf)));
-
-    // Enviar al servidor para convertir a MP3
-    const r=await fetch('/api/convert',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({wav:base64})
-    });
-
-    if(!r.ok) throw new Error('Error en conversión: '+r.status);
-
-    const mp3Blob=await r.blob();
-    const url=URL.createObjectURL(mp3Blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=nombre;a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),5000);
-    toast('✓ MP3 descargado');
-
-  }catch(e){
-    // Fallback: descargar WAV si falla la conversión
-    console.warn('Conversión MP3 falló, descargando WAV:',e);
-    const url=URL.createObjectURL(state.audioBlob);
-    const a=document.createElement('a');
-    a.href=url;a.download=nombre.replace('.mp3','.wav');a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),5000);
-    toast('Descargado en WAV (MP3 no disponible)');
-  }
-  document.getElementById('btn-dl').disabled=false;
+  // Si es MP3 nativo (sin música) descarga como .mp3, si es WAV mezclado como .wav
+  const esMp3=state.audioBlob.type.includes('mpeg')||state.audioBlob.type.includes('mp3');
+  const ext=esMp3?'mp3':'wav';
+  const url=URL.createObjectURL(state.audioBlob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`flash-misiones-${fecha}.${ext}`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  toast(`✓ Descargando ${ext.toUpperCase()}`);
 }
 
 function nuevoFlash(){
