@@ -519,18 +519,18 @@ function actualizarCounter(){
 // GUION
 async function armarGuion(){
   const noticias=state.seleccionadas.map(i=>state.noticias[i]);
-  // Buscar 2 titulos deportivos de Ole/Infobae
+  // 3 titulos deportivos de Olé RSS
   let deportesTitulos=[];
   try{
-    const feedDep=FEEDS_DEPORTES[Math.random()<.5?0:1];
-    const r=await fetch('/api/rss?url='+encodeURIComponent(feedDep.url));
+    const r=await fetch('/api/rss?url='+encodeURIComponent('https://www.ole.com.ar/rss/ultimas-noticias/'));
     if(r.ok){
       const txt=await r.text();
       const xml=new DOMParser().parseFromString(txt,'text/xml');
-      deportesTitulos=Array.from(xml.querySelectorAll('item')).slice(0,10)
+      deportesTitulos=Array.from(xml.querySelectorAll('item'))
+        .slice(0,10)
         .map(i=>i.querySelector('title')?.textContent?.trim()||'')
         .filter(t=>t.length>10)
-        .slice(0,2);
+        .slice(0,3);
     }
   }catch(e){}
   let climaInicio='',climaFinal='',dolarTexto='',pronosticoTexto='',combustiblesTexto='',quinielaTexto='';
@@ -636,10 +636,28 @@ async function armarGuion(){
 
 
 
+  // Extraer primeras N oraciones completas sin cortar
+  function primerasOraciones(txt, maxOraciones=2){
+    // Separar por punto, signo de exclamacion o interrogacion
+    const ors = txt.match(/[^.!?]+[.!?]+/g) || [txt];
+    return ors.slice(0, maxOraciones).join(' ').trim();
+  }
+
+  // Para noticias politicas/economicas permitir 3 oraciones, resto 2
+  function esPoliticaEconomia(n){
+    const txt=(n.titulo+' '+(n.desc||'')).toLowerCase();
+    return ['gobierno','presidente','ministro','senado','diputado','congreso',
+      'economia','inflacion','inflación','presupuesto','deuda','banco','dolar',
+      'dólar','precio','impuesto','reforma','ley ','decreto','elección','eleccion',
+      'gobernador','intendente','municipal','provincial','nacional'].some(p=>txt.includes(p));
+  }
+
   const bloques=noticias.map(n=>{
-    let t=n.titulo.trim();if(!t.match(/[.?!]$/))t+='.';
-    let b=n.desc.trim();if(!b.match(/[.?!]$/))b+='.';
-    return t+'\n'+b;
+    let t=n.titulo.trim();
+    if(!t.match(/[.?!]$/)) t+='.';
+    const maxOr = esPoliticaEconomia(n) ? 3 : 2;
+    const bajada = primerasOraciones(n.desc||'', maxOr);
+    return t + (bajada ? ' ' + bajada : '');
   });
 
   function estimarDuracion(palabras){
@@ -653,10 +671,15 @@ async function armarGuion(){
   const intro='Noticias e información actualizada de Misiones Cuatro.';
   const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
 
+  const MAX_PALABRAS_CUERPO = 220; // ~2 min al aire incluyendo datos
   let cuerpo='';
+  let palabrasCuerpo=0;
   for(const bloque of bloques){
-    // Nunca cortar un bloque a la mitad — siempre incluir completo o no incluir
+    const pw=bloque.split(/\s+/).filter(Boolean).length;
+    // Si agregar este bloque supera el maximo, parar (nunca cortar a la mitad)
+    if(palabrasCuerpo>0 && palabrasCuerpo+pw > MAX_PALABRAS_CUERPO) break;
     cuerpo+=(cuerpo?'\n\n':'')+bloque;
+    palabrasCuerpo+=pw;
   }
 
   // Duracion real basada en el cuerpo ya armado
@@ -673,7 +696,8 @@ async function armarGuion(){
   if(climaFinal)partes.push(climaFinal);
   if(dolarTexto)partes.push(dolarTexto);
   if(deportesTitulos.length){
-    const depTexto='En deportes: '+deportesTitulos.map(t=>t.replace(/[.!?]$/,'')).join('. ')+'.';
+    const items=deportesTitulos.map(t=>t.replace(/[.!?]$/,'').trim());
+    const depTexto='En deportes: '+items.join('. ')+'.';
     partes.push(depTexto);
   }
   partes.push(cierre);
