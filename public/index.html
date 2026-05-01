@@ -422,7 +422,7 @@ async function fetchRSS(feed){
     const xml=new DOMParser().parseFromString(txt,'text/xml');
     return Array.from(xml.querySelectorAll('item')).slice(0,20).map(item=>({
       titulo:item.querySelector('title')?.textContent?.trim()||'',
-      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,400),
+      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,800),
       fuente:feed.name,
       cls:feed.cls||'',
     })).filter(n=>{
@@ -457,7 +457,7 @@ function renderNoticias(){
       <div style="flex:1">
         <div class="ni-fuente ${n.cls}">● ${n.fuente}</div>
         <div class="ni-titulo">${n.titulo}</div>
-        ${n.desc?`<div class="ni-desc">${n.desc.slice(0,120)}${n.desc.length>120?'...':''}</div>`:''}
+        ${n.desc?`<div class="ni-desc">${n.desc.slice(0,150)}${n.desc.length>150?'...':''}</div>`:''}
       </div>
     </div>`).join('');
   actualizarCounter();
@@ -560,16 +560,7 @@ async function armarGuion(){
   const gasoil=2099;
   const combustiblesTexto=`En combustibles, la nafta súper de YPF se ubica en ${nafta_super} pesos el litro y el gasoil en ${gasoil} pesos.`;
 
-  function cortarOraciones(txt,max){
-    const ors=txt.match(/[^.!?]+[.!?]+/g)||[txt];
-    let res='',pw=0;
-    for(const o of ors){
-      const p=o.trim().split(/\s+/).length;
-      if(pw+p>max) break;
-      res+=o;pw+=p;
-    }
-    return res.trim();
-  }
+
 
   const bloques=noticias.map(n=>{
     let t=n.titulo.trim();if(!t.match(/[.?!]$/))t+='.';
@@ -577,18 +568,13 @@ async function armarGuion(){
     return t+'\n'+b;
   });
 
-  const META=280;
   const intro='Noticias de Misiones Cuatro en dos minutos.';
   const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
-  const fijas=[intro,climaInicio,dolarTexto,combustiblesTexto,pronosticoTexto,climaFinal,dolarTexto,cierre].join(' ');
-  let restantes=META-fijas.split(/\s+/).filter(Boolean).length;
 
   let cuerpo='';
   for(const bloque of bloques){
-    if(restantes<=0)break;
-    const pw=bloque.split(/\s+/).filter(Boolean).length;
-    if(pw<=restantes){cuerpo+=(cuerpo?'\n\n':'')+bloque;restantes-=pw;}
-    else{const r=cortarOraciones(bloque,restantes);if(r)cuerpo+=(cuerpo?'\n\n':'')+r;break;}
+    // Nunca cortar un bloque a la mitad — siempre incluir completo o no incluir
+    cuerpo+=(cuerpo?'\n\n':'')+bloque;
   }
 
   const partes=[intro];
