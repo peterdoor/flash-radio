@@ -354,7 +354,7 @@
 <div class="toast" id="toast"></div>
 
 <div class="dev-footer" id="dev-footer">
-  <span class="dev-version">DoorApp v1.9</span>
+  <span class="dev-version">DoorApp v2.0</span>
   <button class="dev-reset" onclick="resetUsadas()" title="Resetear noticias usadas">↺ reset</button>
 </div>
 
@@ -1187,7 +1187,10 @@ function nuevoFlash(){
   irA(0);
 }
 
-window.addEventListener('load',cargarVoces);
+window.addEventListener('load',()=>{
+  irA(0);
+  cargarVoces();
+});
 </script>
 </body>
 </html>
