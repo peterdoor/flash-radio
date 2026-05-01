@@ -431,10 +431,14 @@ function irA(n){
     main.className='btn btn-primary';
   }
 
-  // Ocultar footer-main en paso 3 si ya generó audio
-  if(n===4&&document.getElementById('result-audio').classList.contains('v')){
-    main.style.display='none';
+  // Paso 4 (audio): ocultar sticky footer, los botones están dentro del resultado
+  const sf=document.getElementById('sticky-footer');
+  if(n===4){
+    sf.style.display='none';
+    document.getElementById('scroll-area').style.paddingBottom='1rem';
   } else {
+    sf.style.display='';
+    document.getElementById('scroll-area').style.paddingBottom='';
     main.style.display='';
   }
 }
@@ -609,7 +613,11 @@ async function armarGuion(){
         else if(tmax>=35) proximas='Se mantiene el calor intenso durante el día. ';
         else proximas='';
 
-        climaFinal=`Para cerrar, el tiempo. ${expresion} ${proximas}${proximaLluvia} Mañana entre ${tmin2} y ${tmax2} grados${prob2>=60?' con lluvias probables':viento2>30?' y vientos moderados':''}. El miércoles se esperan entre ${tmin3} y ${tmax3} grados.`;
+        const dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+        const hoy=new Date();
+        const manana=dias[(hoy.getDay()+1)%7];
+        const pasado=dias[(hoy.getDay()+2)%7];
+        climaFinal=`Para cerrar, el tiempo. ${expresion} ${proximas}${proximaLluvia} El ${manana}, entre ${tmin2} y ${tmax2} grados${prob2>=60?' con lluvias probables':viento2>30?' y vientos moderados':''}. El ${pasado} se esperan entre ${tmin3} y ${tmax3} grados.`;
       }).catch(()=>{}),
 
     // DOLAR
