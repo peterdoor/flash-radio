@@ -189,9 +189,10 @@
   /* TOAST */
   .dev-footer{
     position:fixed;bottom:calc(var(--footer-h) + 2px);right:8px;
-    display:flex;align-items:center;gap:.5rem;z-index:50;opacity:.25;
+    display:none;align-items:center;gap:.5rem;z-index:50;opacity:.25;
     transition:opacity .2s;
   }
+  .dev-footer.visible{display:flex;}
   .dev-footer:hover{opacity:.8;}
   .dev-version{font-family:var(--mono);font-size:.52rem;color:#666;letter-spacing:1px;}
   .dev-reset{
@@ -352,7 +353,7 @@
 
 <div class="toast" id="toast"></div>
 
-<div class="dev-footer">
+<div class="dev-footer" id="dev-footer">
   <span class="dev-version">DoorApp v1.0</span>
   <button class="dev-reset" onclick="resetUsadas()" title="Resetear noticias usadas">↺ reset</button>
 </div>
@@ -372,7 +373,7 @@ const VOCES_DEFAULT=[
   {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Facundo'},
   {id:'ByVRQtaK1WDOvTmP1PKO',name:'⭐ Mi voz 2'},
 ];
-const state={paso:0,noticias:[],seleccionadas:[],guion:'',audioBlob:null,renderedBuffer:null,mp3Blob:null};
+const state={paso:0,noticias:[],seleccionadas:[],guion:'',audioBlob:null,renderedBuffer:null,mp3Blob:null,wasapBlob:null};
 
 // RELOJ
 function tick(){const n=new Date();document.getElementById('reloj').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');}
@@ -427,6 +428,10 @@ function irA(n){
     main.disabled=false;
     main.className='btn btn-primary';
   }
+
+  // Dev footer solo en paso 0
+  const df=document.getElementById('dev-footer');
+  if(df) df.classList.toggle('visible', n===0);
 
   // Paso 4: mostrar footer con boton generar
   // Solo ocultar el footer si ya generó (los botones están dentro del resultado)
@@ -1108,25 +1113,81 @@ async function mezclarConFFmpeg(blob, calidad='radio'){
 async function compartirWasap(){
   const blob=state.audioBlob||state.mp3Blob;
   if(!blob){toast('Generá el audio primero');return;}
+  const fecha=getFecha();
+
+  // Si ya tenemos el blob liviano cacheado, compartir directo
+  if(state.wasapBlob){
+    const archivo=new File([state.wasapBlob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
+      try{ await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'}); return; }
+      catch(e){ if(e.name==='AbortError') return; }
+    }
+    descargarBlob(state.wasapBlob,`flash-wasap-${fecha}.mp3`);
+    return;
+  }
+
+  // Comprimir en browser: decodificar → reducir sample rate → re-encodear como OGG Opus
   const btn=document.getElementById('btn-dl-wasap');
   btn.disabled=true;
-  toast('Preparando versión liviana...');
-  const fecha=getFecha();
+  toast('Comprimiendo para WhatsApp...');
   try{
-    // Recomprimir a 64kbps mono para WhatsApp via servidor
-    const wasapBlob=await mezclarConFFmpeg(blob,'wasap');
+    const ab=await blob.arrayBuffer();
+    const ctx=new AudioContext();
+    const decoded=await ctx.decodeAudioData(ab.slice(0));
+    await ctx.close();
+
+    // Reducir a mono 22050Hz con OfflineAudioContext
+    const SR=22050;
+    const offCtx=new OfflineAudioContext(1, Math.ceil(decoded.duration*SR), SR);
+    const src=offCtx.createBufferSource();
+    src.buffer=decoded;
+    // Mezclar a mono
+    const merger=offCtx.createChannelMerger(1);
+    src.connect(offCtx.destination);
+    src.start(0);
+    const rendered=await offCtx.startRendering();
+
+    // Grabar como OGG Opus (muy liviano, WhatsApp lo acepta)
+    const ctx2=new AudioContext({sampleRate:SR});
+    const dest=ctx2.createMediaStreamDestination();
+    const src2=ctx2.createBufferSource();
+    src2.buffer=rendered;
+    src2.connect(dest);
+
+    const mime=MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+      ?'audio/ogg;codecs=opus'
+      :'audio/webm;codecs=opus';
+
+    const wasapBlob=await new Promise((res,rej)=>{
+      const chunks=[];
+      const rec=new MediaRecorder(dest.stream,{mimeType:mime,audioBitsPerSecond:32000});
+      rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+      rec.onstop=()=>{ctx2.close();res(new Blob(chunks,{type:mime}));};
+      rec.onerror=rej;
+      rec.start(100);
+      src2.start(0);
+      src2.onended=()=>setTimeout(()=>rec.stop(),300);
+    });
+
+    state.wasapBlob=wasapBlob;
     const mb=(wasapBlob.size/1024/1024).toFixed(1);
-    const archivo=new File([wasapBlob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
+    const ext=mime.includes('ogg')?'ogg':'weba';
+    const archivo=new File([wasapBlob],`flash-wasap-${fecha}.${ext}`,{type:mime});
+
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
-      try{
-        await navigator.share({files:[archivo],title:'Flash Informativo Misiones Cuatro'});
-        btn.disabled=false;return;
-      }catch(e){ if(e.name==='AbortError'){btn.disabled=false;return;} }
+      try{ await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'}); btn.disabled=false; return; }
+      catch(e){ if(e.name==='AbortError'){btn.disabled=false;return;} }
     }
-    descargarBlob(wasapBlob,`flash-wasap-${fecha}.mp3`);
-    toast(`✓ WhatsApp listo (${mb} MB)`);
+    descargarBlob(wasapBlob,`flash-wasap-${fecha}.${ext}`);
+    toast(`✓ WhatsApp (${mb} MB)`);
   }catch(e){
-    // Fallback: mismo MP3 de radio
+    console.error(e);
+    // Fallback: mismo MP3
+    const archivo=new File([blob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
+      try{ await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'}); btn.disabled=false; return; }
+      catch(e2){ if(e2.name==='AbortError'){btn.disabled=false;return;} }
+    }
     descargarBlob(blob,`flash-wasap-${fecha}.mp3`);
     toast('✓ MP3 descargado para WhatsApp');
   }
@@ -1153,6 +1214,7 @@ function resetAudio(){
   state.audioBlob=null;
   state.mp3Blob=null;
   state.renderedBuffer=null;
+  state.wasapBlob=null;
   document.getElementById('result-audio').classList.remove('v');
   // Volver a mostrar sticky footer con boton generar
   const sf=document.getElementById('sticky-footer');
