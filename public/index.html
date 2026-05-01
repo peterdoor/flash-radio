@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Flash Radio — Misiones Cuatro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+  :root{
+    --rojo:#c1272d;--azul:#083654;--negro:#06111d;--gris:#0d1e2b;--gris2:#142536;
+    --blanco:#f0f4f8;--amarillo:#f5c400;--verde:#00c853;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--display:'Bebas Neue',sans-serif;
+    --footer-h:80px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow-x:hidden;}
+  body{background:var(--negro);color:var(--blanco);font-family:var(--sans);display:flex;flex-direction:column;background-image:radial-gradient(ellipse at top,#0d2540 0%,var(--negro) 60%);}
+
+  /* HEADER */
+  header{
+    background:white;padding:0 1rem;
+    display:flex;align-items:center;justify-content:space-between;
+    height:56px;flex-shrink:0;
+    border-bottom:3px solid var(--rojo);
+    position:sticky;top:0;z-index:200;
+    box-shadow:0 2px 12px rgba(0,0,0,.15);
+  }
+  .logo-wrap{display:flex;align-items:center;gap:.6rem;}
+  .logo-svg{height:30px;display:flex;align-items:center;}
+  .logo-svg svg{height:30px;width:auto;}
+  .logo-sub{
+    font-family:var(--mono);font-size:.52rem;letter-spacing:2px;
+    color:var(--rojo);text-transform:uppercase;
+    border-left:2px solid var(--rojo);padding-left:.5rem;line-height:1.3;
+  }
+  .reloj{font-family:var(--mono);font-size:.65rem;color:var(--azul);letter-spacing:1px;opacity:.7;}
+
+  /* STEPS DOTS */
+  .steps-dots{
+    display:flex;align-items:center;justify-content:center;
+    gap:.5rem;padding:.7rem 1rem;background:var(--azul);
+    border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;
+  }
+  .dot-step{
+    width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);
+    font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.3);
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s;flex-shrink:0;
+  }
+  .dot-step.active{border-color:var(--rojo);color:white;background:var(--rojo);}
+  .dot-step.done{border-color:var(--verde);color:var(--verde);background:rgba(0,200,83,.1);}
+  .dot-line{flex:1;height:2px;background:rgba(255,255,255,.1);max-width:40px;}
+  .dot-line.done{background:var(--verde);}
+
+  /* SCROLL AREA */
+  .scroll-area{flex:1;overflow-y:auto;padding:1rem 1rem calc(var(--footer-h) + 1rem);}
+
+  /* PANELS */
+  .panel{display:none;}
+  .panel.active{display:block;animation:fi .25s ease;}
+  @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+  /* HOME */
+  .home-hero{text-align:center;padding:2rem 1rem;}
+  .home-hero h1{font-family:var(--display);font-size:2.8rem;letter-spacing:5px;color:white;margin-bottom:.4rem;}
+  .home-hero p{font-family:var(--mono);font-size:.7rem;color:rgba(255,255,255,.4);letter-spacing:2px;margin-bottom:2rem;}
+  .btn-enorme{
+    display:block;width:100%;font-family:var(--display);font-size:1.6rem;
+    letter-spacing:4px;background:var(--rojo);color:white;border:none;
+    border-radius:4px;padding:1.4rem;cursor:pointer;
+    box-shadow:0 4px 30px rgba(193,39,45,.4);
+    transition:all .2s;
+  }
+  .btn-enorme:hover{background:#a01f24;transform:translateY(-2px);box-shadow:0 8px 40px rgba(193,39,45,.5);}
+
+  .sources-strip{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-top:1.5rem;}
+  .src-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:1px;text-transform:uppercase;padding:.25rem .6rem;border:1px solid #2a2a2a;border-radius:2px;color:#444;}
+  .src-tag span{color:var(--verde);margin-right:3px;}
+
+  /* PANEL TITLES */
+  .panel-title{font-family:var(--display);font-size:1.4rem;letter-spacing:3px;color:white;margin-bottom:.2rem;}
+  .panel-sub{font-family:var(--mono);font-size:.65rem;color:#555;letter-spacing:1px;margin-bottom:1rem;}
+
+  /* NOTICIAS */
+  .noticias-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:.7rem;
+    position:sticky;top:0;z-index:50;
+    background:var(--negro);padding:.5rem 0;
+    margin-left:-1rem;margin-right:-1rem;padding-left:1rem;padding-right:1rem;
+  }
+  .counter{font-family:var(--mono);font-size:.7rem;color:#666;}
+  .counter span{color:var(--amarillo);font-size:.9rem;font-weight:bold;}
+  .counter-bar{height:4px;background:#1e1e1e;border-radius:2px;margin-bottom:.8rem;overflow:hidden;}
+  .counter-fill{height:100%;background:var(--amarillo);transition:width .3s;border-radius:2px;}
+
+  .noticia-item{
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;
+    padding:.9rem 1rem;cursor:pointer;transition:all .15s;
+    display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.5rem;
+  }
+  .noticia-item:active{transform:scale(.98);}
+  .noticia-item:hover{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.06);}
+  .noticia-item.sel{border-color:var(--rojo);background:rgba(193,39,45,.12);}
+  .noticia-item.sel .ni-check{background:var(--rojo);border-color:var(--rojo);color:white;}
+  .ni-check{
+    width:24px;height:24px;border:2px solid rgba(255,255,255,.2);border-radius:6px;
+    flex-shrink:0;margin-top:1px;display:flex;align-items:center;
+    justify-content:center;font-size:.8rem;transition:all .15s;
+  }
+  .ni-fuente{font-family:var(--mono);font-size:.6rem;color:#555;letter-spacing:1px;margin-bottom:.2rem;}
+  .ni-fuente.m4{color:#e8002d;}
+  .ni-fuente.euro{color:#4a9eff;}
+  .ni-fuente.lanacion{color:#f5c400;}
+  .ni-fuente.ole{color:#22c55e;}
+  .noticia-item.usada{opacity:.5;}
+  .noticia-item.usada .ni-titulo::after{content:' ✓ ya usada';font-size:.65rem;color:#555;}
+  .ni-titulo{font-size:.92rem;line-height:1.4;color:var(--blanco);font-weight:400;}
+  .ni-desc{font-size:.78rem;color:#666;line-height:1.4;margin-top:.3rem;}
+  .ni-loading{text-align:center;font-family:var(--mono);font-size:.75rem;color:#555;padding:3rem 1rem;}
+
+  /* GUION */
+  .guion-area{
+    width:100%;background:#111;border:1px solid #333;border-radius:8px;
+    padding:1rem;color:var(--blanco);font-family:var(--sans);
+    font-size:.92rem;line-height:1.85;resize:none;min-height:200px;
+    height:calc(100vh - 280px);
+  }
+  .guion-area:focus{outline:none;border-color:var(--amarillo);}
+  .guion-stats{font-family:var(--mono);font-size:.65rem;color:#555;margin-top:.5rem;}
+
+  /* AUDIO CONFIG */
+  .audio-config{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:1rem;margin-bottom:1rem;}
+  .config-label{font-family:var(--mono);font-size:.65rem;color:#888;letter-spacing:1px;display:block;margin-bottom:.4rem;text-transform:uppercase;}
+  .select{
+    background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12);border-radius:6px;
+    padding:.7rem .8rem;color:var(--blanco);font-family:var(--mono);
+    font-size:.8rem;width:100%;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%23666'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right .8rem center;
+    padding-right:2rem;
+  }
+
+  /* PROGRESS */
+  .progress-wrap{display:none;margin-bottom:1rem;}
+  .progress-wrap.v{display:block;}
+  .pbar{height:6px;background:#1e1e1e;border-radius:3px;overflow:hidden;margin-bottom:.5rem;}
+  .pfill{height:100%;background:var(--rojo);width:0%;transition:width .5s ease;}
+  .plabel{font-family:var(--mono);font-size:.7rem;color:#555;text-align:center;}
+
+  /* RESULTADO */
+  .result-audio{background:var(--gris);border:2px solid var(--verde);border-radius:8px;padding:1rem;display:none;margin-bottom:1rem;}
+  .result-audio.v{display:block;animation:fi .3s ease;}
+  .ra-title{font-family:var(--display);font-size:1.1rem;letter-spacing:3px;color:var(--verde);margin-bottom:.8rem;}
+  audio{width:100%;margin-bottom:.8rem;}
+
+  /* STICKY FOOTER */
+  .sticky-footer{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--azul);border-top:2px solid var(--rojo);
+    padding:.8rem 1rem;display:flex;gap:.6rem;
+    z-index:100;height:var(--footer-h);align-items:center;
+    box-shadow:0 -4px 20px rgba(0,0,0,.3);
+  }
+  .sticky-footer .btn{flex:1;}
+
+  /* BUTTONS */
+  .btn{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:1px;
+    padding:.75rem 1rem;border:none;border-radius:8px;cursor:pointer;
+    text-transform:uppercase;transition:all .15s;
+    display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+    font-weight:600;min-height:48px;
+  }
+  .btn:disabled{opacity:.3;cursor:not-allowed;}
+  .btn:active:not(:disabled){transform:scale(.96);}
+  .btn-primary{background:var(--rojo);color:white;box-shadow:0 2px 12px rgba(193,39,45,.3);}
+  .btn-primary:hover:not(:disabled){background:#a01f24;}
+  .btn-ghost{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.12);}
+  .btn-ghost:hover:not(:disabled){background:rgba(255,255,255,.1);color:white;}
+  .btn-yellow{background:var(--amarillo);color:#000;font-weight:700;}
+  .btn-yellow:hover:not(:disabled){background:#d4a800;}
+  .btn-green{background:rgba(0,200,83,.1);color:var(--verde);border:1px solid var(--verde);}
+  .btn-green:hover:not(:disabled){background:var(--verde);color:#000;}
+  .btn-green-solid{background:var(--rojo);color:white;}
+  .btn-green-solid:hover:not(:disabled){background:#a01f24;}
+  .btn-sm{padding:.4rem .7rem;min-height:34px;font-size:.62rem;border-radius:5px;}
+
+  /* TOAST */
+  .dev-footer{
+    position:fixed;bottom:calc(var(--footer-h) + 2px);right:8px;
+    display:flex;align-items:center;gap:.5rem;z-index:50;opacity:.25;
+    transition:opacity .2s;
+  }
+  .dev-footer:hover{opacity:.8;}
+  .dev-version{font-family:var(--mono);font-size:.52rem;color:#666;letter-spacing:1px;}
+  .dev-reset{
+    font-family:var(--mono);font-size:.52rem;color:#888;
+    background:none;border:1px solid #333;border-radius:3px;
+    padding:2px 6px;cursor:pointer;letter-spacing:1px;
+  }
+  .dev-reset:hover{color:var(--rojo);border-color:var(--rojo);}
+
+  .toast{
+    position:fixed;bottom:calc(var(--footer-h) + .5rem);left:50%;
+    transform:translateX(-50%) translateY(10px);
+    background:#1a1a1a;border:1px solid var(--amarillo);color:var(--amarillo);
+    font-family:var(--mono);font-size:.75rem;padding:.5rem 1.2rem;
+    border-radius:20px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo-svg"><svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 942.21 184.07"><defs><style>.cls-1{fill:#c1272d;}.cls-2{fill:#083654;}</style></defs><path class="cls-1" d="M134.87,115.58A134.48,134.48,0,0,0,67.44,0,134.44,134.44,0,0,0,0,115.58c0,.35,0,.7,0,1s0,.7,0,1.05a67.44,67.44,0,0,0,134.86,0v-2.1Z"/><path class="cls-2" d="M123.65,50.58a139.75,139.75,0,0,1,16.54,64.92c0,.39,0,.77,0,1.13s0,.75,0,1.15A72.22,72.22,0,0,1,123,163.6a134.78,134.78,0,0,0,55.27-83.24A135.22,135.22,0,0,0,123.65,50.58Z"/><path d="M242.52,97.93c.51,1.15,1,2.32,1.48,3.51q.7-1.83,1.5-3.57c.53-1.15,1.07-2.27,1.63-3.36l15.6-30.75a5.58,5.58,0,0,1,.86-1.23,2.82,2.82,0,0,1,1-.64,3.37,3.37,0,0,1,1.23-.21h12.37v60.75H265.74v-35c0-1.69.08-3.53.25-5.5l-16.11,31.25a5.3,5.3,0,0,1-2,2.21,5.62,5.62,0,0,1-2.9.75H243a5.59,5.59,0,0,1-2.9-.75,5.32,5.32,0,0,1-2-2.21l-16.19-31.3c.11,1,.2,1.94.25,2.9s.09,1.85.09,2.65v35H209.82V61.68h12.37a3.37,3.37,0,0,1,1.23.21,2.86,2.86,0,0,1,1,.64,5.57,5.57,0,0,1,.85,1.23l15.65,30.87C241.47,95.69,242,96.79,242.52,97.93Z"/><path d="M303.63,122.43H289.44V61.63h14.19Z"/><path d="M348.77,74a5.34,5.34,0,0,1-1.31,1.5,3,3,0,0,1-1.77.5,4.3,4.3,0,0,1-2.07-.61L341.12,74a21.69,21.69,0,0,0-3.19-1.36,12.89,12.89,0,0,0-4.09-.6c-2.65,0-4.61.56-5.91,1.69A5.75,5.75,0,0,0,326,78.33a4.19,4.19,0,0,0,1.17,3,10.1,10.1,0,0,0,3.07,2.09,32.11,32.11,0,0,0,4.34,1.6c1.62.49,3.29,1,5,1.63a44.38,44.38,0,0,1,5,2.11,16.79,16.79,0,0,1,4.34,3.09A14.45,14.45,0,0,1,352,96.46a16.37,16.37,0,0,1,1.16,6.49,21,21,0,0,1-1.46,7.88,18.38,18.38,0,0,1-4.23,6.41,19.8,19.8,0,0,1-6.84,4.3,25.74,25.74,0,0,1-9.25,1.56,30.37,30.37,0,0,1-5.78-.58,34.12,34.12,0,0,1-5.69-1.65,32.72,32.72,0,0,1-5.18-2.53,22,22,0,0,1-4.21-3.25l4.17-6.59a3.4,3.4,0,0,1,1.3-1.22,3.69,3.69,0,0,1,1.79-.45,4.71,4.71,0,0,1,2.52.79c.85.53,1.81,1.11,2.88,1.75a22.38,22.38,0,0,0,3.7,1.75,13.79,13.79,0,0,0,4.92.8,9.42,9.42,0,0,0,6-1.69q2.13-1.7,2.13-5.37a5.12,5.12,0,0,0-1.17-3.46,9,9,0,0,0-3.07-2.21,28.49,28.49,0,0,0-4.32-1.54c-1.61-.45-3.27-.94-5-1.49a36.08,36.08,0,0,1-5-2A15.6,15.6,0,0,1,317,91,14.49,14.49,0,0,1,314,86.19,19.19,19.19,0,0,1,312.81,79a16.92,16.92,0,0,1,1.37-6.68,17.3,17.3,0,0,1,4.05-5.8,19.89,19.89,0,0,1,6.55-4.07A24.12,24.12,0,0,1,333.67,61a32.39,32.39,0,0,1,5.44.44,28.28,28.28,0,0,1,5,1.29,27.83,27.83,0,0,1,4.45,2,20.51,20.51,0,0,1,3.69,2.7Z"/><path d="M375.56,122.43H361.38V61.63h14.18Z"/><path d="M446.83,92a32.58,32.58,0,0,1-2.27,12.27,29.76,29.76,0,0,1-6.4,9.87,29.32,29.32,0,0,1-10,6.57,36.29,36.29,0,0,1-25.85,0,29,29,0,0,1-16.42-16.44,34.3,34.3,0,0,1,0-24.54,29.2,29.2,0,0,1,6.43-9.84,29.7,29.7,0,0,1,10-6.55A34,34,0,0,1,415.29,61a33.55,33.55,0,0,1,12.91,2.4,29.92,29.92,0,0,1,10,6.57,29.37,29.37,0,0,1,6.4,9.85A32.47,32.47,0,0,1,446.83,92ZM432.4,92a26.2,26.2,0,0,0-1.17-8.11,17.22,17.22,0,0,0-3.36-6.12,14.61,14.61,0,0,0-5.36-3.84,18.48,18.48,0,0,0-7.22-1.33A18.71,18.71,0,0,0,408,73.94a14.56,14.56,0,0,0-5.39,3.84,17.22,17.22,0,0,0-3.36,6.12,29.1,29.1,0,0,0,0,16.27,17.18,17.18,0,0,0,3.36,6.11A14.18,14.18,0,0,0,408,110.1a18.9,18.9,0,0,0,7.28,1.32,18.66,18.66,0,0,0,7.22-1.32,14.23,14.23,0,0,0,5.36-3.82,17.18,17.18,0,0,0,3.36-6.11A26.4,26.4,0,0,0,432.4,92Z"/><path d="M462.56,61.72a3.82,3.82,0,0,1,1.13.31,3.62,3.62,0,0,1,1,.65,10.93,10.93,0,0,1,1,1.12l28.88,36.52c-.11-1.17-.19-2.31-.25-3.4s-.08-2.14-.08-3.11V61.63h12.43v60.8h-7.34a6.68,6.68,0,0,1-2.76-.5,5.88,5.88,0,0,1-2.17-1.83L465.74,83.88c.08,1.05.15,2.09.21,3.1s.08,2,.08,2.86v32.59H453.59V61.63H461A11,11,0,0,1,462.56,61.72Z"/><path d="M555.83,61.63V72.48h-25V86.67H550V97.1H530.87v14.48h25v10.85H516.69V61.63Z"/><path d="M597.72,74a5.5,5.5,0,0,1-1.31,1.5,3,3,0,0,1-1.78.5,4.23,4.23,0,0,1-2.06-.61L590.06,74a21.24,21.24,0,0,0-3.19-1.36,12.85,12.85,0,0,0-4.09-.6q-4,0-5.9,1.69a5.72,5.72,0,0,0-1.94,4.57,4.19,4.19,0,0,0,1.17,3,10,10,0,0,0,3.06,2.09,33.15,33.15,0,0,0,4.34,1.6q2.44.73,5,1.63a44.38,44.38,0,0,1,5,2.11,17,17,0,0,1,4.34,3.09,14.43,14.43,0,0,1,3.06,4.57,16.19,16.19,0,0,1,1.17,6.49,21.19,21.19,0,0,1-1.46,7.88,18.41,18.41,0,0,1-4.24,6.41,19.8,19.8,0,0,1-6.84,4.3,25.65,25.65,0,0,1-9.24,1.56,30.37,30.37,0,0,1-5.78-.58,34.51,34.51,0,0,1-5.7-1.65,32.62,32.62,0,0,1-5.17-2.53,22.34,22.34,0,0,1-4.22-3.25l4.18-6.59a3.3,3.3,0,0,1,1.29-1.22,3.73,3.73,0,0,1,1.8-.45,4.73,4.73,0,0,1,2.52.79c.85.53,1.81,1.11,2.88,1.75a22.64,22.64,0,0,0,3.69,1.75,13.81,13.81,0,0,0,4.93.8,9.41,9.41,0,0,0,6-1.69q2.13-1.7,2.13-5.37a5.07,5.07,0,0,0-1.17-3.46,9,9,0,0,0-3.06-2.21,28.49,28.49,0,0,0-4.32-1.54c-1.62-.45-3.27-.94-5-1.49a36,36,0,0,1-5-2A15.31,15.31,0,0,1,566,91a14.49,14.49,0,0,1-3.07-4.84A19.18,19.18,0,0,1,561.75,79a16.93,16.93,0,0,1,1.38-6.68,17.3,17.3,0,0,1,4-5.8,19.89,19.89,0,0,1,6.55-4.07A24.08,24.08,0,0,1,582.62,61a32.47,32.47,0,0,1,5.44.44,28.5,28.5,0,0,1,5,1.29,27.72,27.72,0,0,1,4.44,2,20.59,20.59,0,0,1,3.7,2.7Z"/><path d="M662.65,117.06a24.63,24.63,0,0,1-11.47,5.44,38.26,38.26,0,0,1-7,.6,23.84,23.84,0,0,1-9.43-1.78,20.14,20.14,0,0,1-7.16-5.06,22.64,22.64,0,0,1-4.57-7.94,31.68,31.68,0,0,1-1.62-10.46A40.22,40.22,0,0,1,623.75,84a36.4,36.4,0,0,1,6.67-11.5,32.12,32.12,0,0,1,10.15-7.85,28.56,28.56,0,0,1,12.88-2.91,23.72,23.72,0,0,1,10.27,2,21.4,21.4,0,0,1,7.67,6.41l-5.75,6.61a7.3,7.3,0,0,1-1.44,1.12,3.31,3.31,0,0,1-1.78.49,3.49,3.49,0,0,1-1.92-.49l-1.7-1a13.52,13.52,0,0,0-2.24-1,10.35,10.35,0,0,0-3.45-.49A9.74,9.74,0,0,0,648,76.9a14.67,14.67,0,0,0-4.46,4.4,24.18,24.18,0,0,0-3.13,7.07,35.18,35.18,0,0,0-1.18,9.54,17.59,17.59,0,0,0,.69,5.21,10.75,10.75,0,0,0,1.9,3.68A7.87,7.87,0,0,0,644.6,109a8,8,0,0,0,3.45.75,10.73,10.73,0,0,0,4.45-.78,16.8,16.8,0,0,0,3-1.69l2.36-1.7a4.44,4.44,0,0,1,2.65-.78,3.82,3.82,0,0,1,1.69.41,4.11,4.11,0,0,1,1.41,1.09l4.6,5.4A52.23,52.23,0,0,1,662.65,117.06Z"/><path d="M697.77,62.55l-4.48,37.84c-.08.61-.14,1.18-.17,1.69s-.06,1-.06,1.47c0,2,.35,3.45,1.06,4.25a4,4,0,0,0,3.19,1.21,8,8,0,0,0,3.77-1.06,15.43,15.43,0,0,0,3.82-3,24.4,24.4,0,0,0,3.43-4.69,30.1,30.1,0,0,0,2.61-6.15l3.85-31.57h17.83l-7.25,59.63h-9.08q-6.33,0-6.33-5.86v-3.8a29.57,29.57,0,0,1-9.25,8,21.89,21.89,0,0,1-10.3,2.59,15.16,15.16,0,0,1-6.12-1.21,13.42,13.42,0,0,1-4.83-3.53,16.26,16.26,0,0,1-3.16-5.75,25.11,25.11,0,0,1-1.13-7.85q0-1,.09-2.13c.06-.73.12-1.48.2-2.24L680,62.55Z"/><path d="M787.1,122.18h-9.55a7.79,7.79,0,0,1-2.79-.43,4.52,4.52,0,0,1-1.78-1.18,4.15,4.15,0,0,1-.92-1.78,9.39,9.39,0,0,1-.26-2.25v-4.25a30.73,30.73,0,0,1-8.16,7.94,18,18,0,0,1-9.89,2.87,15.58,15.58,0,0,1-6.22-1.29,15.09,15.09,0,0,1-5.29-3.91,19.61,19.61,0,0,1-3.68-6.67,29.85,29.85,0,0,1-1.38-9.58,40.31,40.31,0,0,1,3-15.38,39.15,39.15,0,0,1,8.28-12.74,39.83,39.83,0,0,1,12.62-8.68,39.25,39.25,0,0,1,16-3.22,66.75,66.75,0,0,1,8.63.57,43.62,43.62,0,0,1,8.62,2.07ZM760.88,109a6.07,6.07,0,0,0,3.79-1.46,16.44,16.44,0,0,0,3.48-4,35.86,35.86,0,0,0,3-5.92,57,57,0,0,0,2.36-7.25l2.07-16.5h-1a16.4,16.4,0,0,0-8,2,19.51,19.51,0,0,0-6.18,5.32,25,25,0,0,0-4,7.82A31.41,31.41,0,0,0,755,98.49a22.13,22.13,0,0,0,.46,4.89,10.66,10.66,0,0,0,1.24,3.25,5,5,0,0,0,1.84,1.81A4.84,4.84,0,0,0,760.88,109Z"/><path d="M805.49,109.3v-1c0-.38,0-.93.09-1.64s.15-1.65.28-2.82.32-2.71.55-4.62l3.05-24.39h-4.78a2.54,2.54,0,0,1-1.84-.71A2.9,2.9,0,0,1,802.1,72s0-.37.11-1,.15-1.3.23-2,.15-1.37.23-2,.12-1,.12-1l.17-1.55,9-1.84L817,48a3.69,3.69,0,0,1,3.91-2.76h9.66l-2.19,17.42h13.35l-1.5,12.19H826.88L824,98.26c-.2,1.57-.34,2.81-.44,3.71s-.17,1.59-.23,2.07-.09.8-.11,1,0,.27,0,.31a4.78,4.78,0,0,0,.78,2.79,2.74,2.74,0,0,0,2.44,1.12,4.71,4.71,0,0,0,1.52-.2,5.93,5.93,0,0,0,1.07-.46l.86-.46a2.11,2.11,0,0,1,.92-.2,1.72,1.72,0,0,1,1.21.37,3.53,3.53,0,0,1,.75,1.18l3.91,8.45a26.84,26.84,0,0,1-7.65,3.89,27.19,27.19,0,0,1-8.23,1.29,19.14,19.14,0,0,1-6.21-.95,13.28,13.28,0,0,1-4.74-2.76,12.77,12.77,0,0,1-3.1-4.34A15.46,15.46,0,0,1,805.49,109.3Z"/><path d="M843.71,122.18,851,62.55h9.2a6.54,6.54,0,0,1,4.31,1.29A5.21,5.21,0,0,1,866,68.07v6.78a32.81,32.81,0,0,1,7.47-9.37,13.1,13.1,0,0,1,8.34-3.28,11.22,11.22,0,0,1,4.77,1.1l-3.22,16.5a14.13,14.13,0,0,0-5.58-1.27c-2.95,0-5.56,1.34-7.85,4s-4.13,7-5.54,12.85l-3.22,26.8Z"/><path d="M910,123.1a25.86,25.86,0,0,1-9.34-1.67,21.24,21.24,0,0,1-7.53-4.86,22.32,22.32,0,0,1-5-7.87,30,30,0,0,1-1.81-10.79,39.25,39.25,0,0,1,2.62-14.57,36.62,36.62,0,0,1,7-11.48,32.21,32.21,0,0,1,10.27-7.53,28.88,28.88,0,0,1,12.27-2.7,25.63,25.63,0,0,1,9.32,1.67,21.21,21.21,0,0,1,7.5,4.86,22.67,22.67,0,0,1,5,7.87,29.54,29.54,0,0,1,1.84,10.79,39.21,39.21,0,0,1-2.62,14.46,37.07,37.07,0,0,1-7,11.5,32.39,32.39,0,0,1-10.27,7.59A28.63,28.63,0,0,1,910,123.1Zm1.61-13.23a8.52,8.52,0,0,0,5.35-1.81,14.58,14.58,0,0,0,4-4.94,29.08,29.08,0,0,0,2.53-7.3,42.8,42.8,0,0,0,.89-8.89q0-6.5-1.75-9.29t-5.73-2.79a8.52,8.52,0,0,0-5.34,1.82,14.53,14.53,0,0,0-4,4.91A28.1,28.1,0,0,0,905,88.89a43.07,43.07,0,0,0-.89,8.91q0,6.38,1.75,9.23C907.06,108.93,909,109.87,911.61,109.87Z"/></svg></div>
+    <div class="logo-sub">FLASH RADIO</div>
+  </div>
+  </div>
+  <div class="reloj" id="reloj">--:--:--</div>
+</header>
+
+<!-- STEPS DOTS -->
+<div class="steps-dots">
+  <div class="dot-step active" id="dot-0">1</div>
+  <div class="dot-line" id="line-01"></div>
+  <div class="dot-step" id="dot-1">2</div>
+  <div class="dot-line" id="line-12"></div>
+  <div class="dot-step" id="dot-2">3</div>
+  <div class="dot-line" id="line-23"></div>
+  <div class="dot-step" id="dot-3">4</div>
+  <div class="dot-line" id="line-34"></div>
+  <div class="dot-step" id="dot-4">5</div>
+</div>
+
+<div class="scroll-area" id="scroll-area">
+
+  <!-- INICIO -->
+  <div class="panel active" id="panel-0">
+    <div class="home-hero">
+      <h1>FLASH INFORMATIVO</h1>
+      <p>MISIONES CUATRO · GENERADOR DE AUDIO RADIAL</p>
+      <button class="btn-enorme" onclick="cargarNoticias()">
+        📰 ELEGIR NOTICIAS
+      </button>
+      <div class="sources-strip">
+        <div class="src-tag" style="border-color:#e8002d;"><span style="color:#e8002d">◉</span>misionescuatro.com</div>
+        <div class="src-tag" style="border-color:#4a9eff;"><span style="color:#4a9eff">◉</span>euronews</div>
+        <div class="src-tag" style="border-color:#f5c400;"><span style="color:#f5c400">◉</span>la nación</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- NOTICIAS -->
+  <div class="panel" id="panel-1">
+    <div class="panel-title">ELEGÍ LAS NOTICIAS</div>
+    <div class="panel-sub">Seleccioná entre 5 y 8</div>
+    <div class="noticias-header">
+      <div class="counter">Seleccionadas: <span id="sel-count">0</span>/8</div>
+      <button class="btn btn-ghost btn-sm" onclick="cargarNoticias()">↺ Recargar</button>
+    </div>
+    <div class="counter-bar"><div class="counter-fill" id="counter-fill" style="width:0%"></div></div>
+    <div id="noticias-list"><div class="ni-loading">Cargando noticias...</div></div>
+  </div>
+
+  <!-- GUION -->
+  <div class="panel" id="panel-2">
+    <div class="panel-title">GUIÓN</div>
+    <div class="panel-sub">Editá si querés</div>
+    <textarea class="guion-area" id="guion-area" oninput="actualizarStats()"></textarea>
+    <div class="guion-stats" id="guion-stats">0 palabras</div>
+  </div>
+
+  <!-- MENSAJE ESPECIAL -->
+  <div class="panel" id="panel-3">
+    <div class="panel-title">MENSAJE ESPECIAL</div>
+    <div class="panel-sub">Opcional — aparece al inicio y al final del flash</div>
+    <div class="audio-config" style="margin-bottom:1rem;">
+      <span class="config-label">Al inicio del flash</span>
+      <input type="text" id="msg-inicio" class="select" placeholder="Ej: ¡Feliz día de la primavera, Misiones!" maxlength="150" style="margin-bottom:1rem;">
+      <span class="config-label">Al final del flash</span>
+      <input type="text" id="msg-final" class="select" placeholder="Ej: Los esperamos en misionescuatro.com" maxlength="150">
+    </div>
+    <p style="font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.3);text-align:center;">Dejá vacío si no querés agregar nada</p>
+  </div>
+
+  <!-- AUDIO -->
+  <div class="panel" id="panel-4">
+    <div class="panel-title">GENERAR AUDIO</div>
+    <div class="panel-sub">Voz + música de fondo</div>
+
+    <div class="audio-config">
+      <span class="config-label">Proveedor de voz</span>
+      <select class="select" id="tts-provider" style="margin-bottom:.8rem;" onchange="onProviderChange()">
+        <option value="eleven">🎙 ElevenLabs — Facundo (mejor calidad)</option>
+        <option value="google">🆓 Google TTS — voz argentina (gratis)</option>
+      </select>
+
+      <div id="eleven-config">
+        <span class="config-label">Voz ElevenLabs <button class="btn btn-ghost btn-sm" style="margin-left:.4rem" onclick="cargarVoces()">↺</button></span>
+        <select class="select" id="voice-select" style="margin-bottom:.8rem;" onchange="resetAudio()"></select>
+      </div>
+
+      <div id="google-config" style="display:none">
+        <span class="config-label">Voz Google (español argentino)</span>
+        <select class="select" id="google-voice" style="margin-bottom:.8rem;" onchange="resetAudio()">
+          <option value="es-US-Neural2-B">Neural2-B US — masculino latino (recomendada)</option>
+          <option value="es-US-Neural2-C">Neural2-C US — femenina latina</option>
+          <option value="es-US-Wavenet-B">WaveNet-B US — masculino latino</option>
+          <option value="es-US-Wavenet-C">WaveNet-C US — femenina latina</option>
+          <option value="es-ES-Neural2-B">Neural2-B España — masculino</option>
+          <option value="es-ES-Neural2-A">Neural2-A España — femenina</option>
+        </select>
+      </div>
+      <span class="config-label">Música de fondo</span>
+      <select class="select" id="music-select" onchange="resetAudio()">
+        <option value="news" selected>🎵 Jingle de noticias</option>
+        <option value="none">Sin música</option>
+      </select>
+    </div>
+
+    <div class="progress-wrap" id="pwrap">
+      <div class="pbar"><div class="pfill" id="pfill"></div></div>
+      <div class="plabel" id="plabel">Iniciando...</div>
+    </div>
+
+    <div class="result-audio" id="result-audio">
+      <div class="ra-title">✓ FLASH LISTO</div>
+      <audio id="player" controls></audio>
+      <div style="display:flex;gap:.6rem;flex-direction:column;">
+        <div style="display:flex;gap:.5rem;width:100%;">
+          <button class="btn btn-yellow" id="btn-dl-radio" onclick="descargarRadio('mp3')" style="flex:1">📻 MP3</button>
+          <button class="btn btn-ghost" id="btn-dl-wav" onclick="descargarRadio('wav')" style="flex:1;border:1px solid var(--amarillo);color:var(--amarillo)">📼 WAV</button>
+        </div>
+        <button class="btn btn-green-solid" id="btn-dl-wasap" onclick="compartirWasap()" style="width:100%;background:#25D366;color:white;">💬 COMPARTIR EN WASAP</button>
+        <div style="display:flex;gap:.5rem;width:100%;margin-top:.4rem;">
+          <button class="btn btn-ghost" onclick="volverGuion()" style="flex:1">← VOLVER</button>
+          <button class="btn btn-primary" onclick="finalizar()" style="flex:1">✓ FINALIZAR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /scroll-area -->
+
+<!-- STICKY FOOTER - cambia segun el paso -->
+<div class="sticky-footer" id="sticky-footer">
+  <button class="btn btn-ghost" id="footer-back" onclick="pasoAtras()" style="display:none">← VOLVER</button>
+  <button class="btn btn-primary" id="footer-main" onclick="accionPrincipal()">ELEGIR NOTICIAS →</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="dev-footer">
+  <span class="dev-version">DoorApp v1.0</span>
+  <button class="dev-reset" onclick="resetUsadas()" title="Resetear noticias usadas">↺ reset</button>
+</div>
+
+<script>
+// Claves en el servidor Vercel (seguro)
+const FEEDS=[
+  {name:'Misiones Cuatro', url:'https://misionescuatro.com/feed/',       cls:'m4'},
+  {name:'Euronews',        url:'https://es.euronews.com/rss?format=mrss&level=vertical&name=news', cls:'euro'},
+  {name:'La Nación',       url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/', cls:'lanacion'},
+];
+const FEEDS_DEPORTES=[
+  {name:'Olé', url:'https://www.ole.com.ar/rss/ultimas-noticias/', cls:'ole'},
+  {name:'Infobae Deportes', url:'https://www.infobae.com/feeds/rss/deportes/', cls:'ole'},
+];
+const VOCES_DEFAULT=[
+  {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Facundo'},
+  {id:'ByVRQtaK1WDOvTmP1PKO',name:'⭐ Mi voz 2'},
+];
+const state={paso:0,noticias:[],seleccionadas:[],guion:'',audioBlob:null,renderedBuffer:null,mp3Blob:null};
+
+// RELOJ
+function tick(){const n=new Date();document.getElementById('reloj').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');}
+setInterval(tick,1000);tick();
+
+function toast(msg,dur=3000){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// NAVEGACION
+function irA(n){
+  state.paso=n;
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.getElementById('scroll-area').scrollTop=0;
+
+  // Dots
+  [0,1,2,3,4].forEach(i=>{
+    const d=document.getElementById('dot-'+i);
+    if(d){d.classList.toggle('active',i===n);d.classList.toggle('done',i<n);}
+  });
+  ['01','12','23','34'].forEach((pair,i)=>{
+    const el=document.getElementById('line-'+pair);
+    if(el) el.classList.toggle('done',i<n);
+  });
+
+  // Footer
+  const back=document.getElementById('footer-back');
+  const main=document.getElementById('footer-main');
+  back.style.display=n>0?'':'none';
+
+  const labels={
+    0:'📰 ELEGIR NOTICIAS →',
+    1:'✓ ARMAR GUIÓN →',
+    2:'💬 MENSAJE ESPECIAL →',
+    3:'🎙 GENERAR AUDIO →',
+    4:'▶ GENERAR AUDIO',
+  };
+  main.textContent=labels[n]||'';
+
+  if(n===1){
+    main.disabled=state.seleccionadas.length<5;
+    main.className='btn btn-primary';
+  } else if(n===2||n===3){
+    main.disabled=false;
+    main.className='btn btn-primary';
+  } else if(n===4){
+    main.disabled=false;
+    main.className='btn btn-green-solid';
+  } else {
+    main.disabled=false;
+    main.className='btn btn-primary';
+  }
+
+  // Ocultar footer-main en paso 3 si ya generó audio
+  if(n===4&&document.getElementById('result-audio').classList.contains('v')){
+    main.style.display='none';
+  } else {
+    main.style.display='';
+  }
+}
+
+function pasoAtras(){
+  if(state.paso>0) irA(state.paso-1);
+}
+
+function accionPrincipal(){
+  if(state.paso===0) cargarNoticias();
+  else if(state.paso===1) armarGuion();
+  else if(state.paso===2) irA(3);
+  else if(state.paso===3){irA(4);cargarVoces();}
+  else if(state.paso===4) generarAudio();
+}
+
+// RSS
+async function fetchRSS(feed){
+  try{
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),8000); // 8s timeout
+    const r=await fetch('/api/rss?url='+encodeURIComponent(feed.url),{signal:ctrl.signal});
+    clearTimeout(timer);
+    if(!r.ok) throw new Error(r.status);
+    const txt=await r.text();
+    const xml=new DOMParser().parseFromString(txt,'text/xml');
+    return Array.from(xml.querySelectorAll('item')).slice(0,20).map(item=>({
+      titulo:item.querySelector('title')?.textContent?.trim()||'',
+      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,800),
+      fuente:feed.name,
+      cls:feed.cls||'',
+    })).filter(n=>{
+      const pw=n.titulo.trim().split(/\s+/).length;
+      if(pw<5||!n.desc||n.desc.trim().length<20) return false;
+      // Filtrar noticias deportivas
+      const txt=(n.titulo+' '+n.desc).toLowerCase();
+      const esDeporte=["fútbol","futbol","gol ","partido ","cancha","torneo","liga ","copa ","campeón","campeon","racing","river plate","boca juniors","san lorenzo","independiente","belgrano","vélez","velez","talleres","atletico","newells","estudiantes","defensa justicia","arsenal","tigre fc","colón","selección","seleccion","mundial","olimpiada"," tenis "," basquet"," rugby "," hockey "," boxeo ","champions league","premier league","serie a ","bundesliga","transferencia","fichaje","goleador","hat-trick"].some(p=>txt.includes(p));
+      return !esDeporte;
+    });
+  }catch(e){console.warn('RSS',feed.name,e.message);return[];}
+}
+
+async function cargarNoticias(){
+  try{ irA(1); }catch(e){ console.error('irA error:',e); }
+  document.getElementById('noticias-list').innerHTML='<div class="ni-loading">Cargando noticias...</div>';
+  state.noticias=[];state.seleccionadas=[];actualizarCounter();
+  const res=await Promise.all(FEEDS.map(fetchRSS));
+  state.noticias=res.flat();
+  const vistas=new Set();
+  state.noticias=state.noticias.filter(n=>{
+    const k=n.titulo.slice(0,50).toLowerCase();
+    if(vistas.has(k))return false;vistas.add(k);return true;
+  });
+  renderNoticias();
+}
+
+function renderNoticias(){
+  const el=document.getElementById('noticias-list');
+  if(!state.noticias.length){
+    el.innerHTML='<div class="ni-loading">No se encontraron noticias. Intentá recargar.</div>';return;
+  }
+  el.innerHTML=state.noticias.map((n,i)=>`
+    <div class="noticia-item ${state.seleccionadas.includes(i)?'sel':''} ${estaUsada(n)?'usada':''}" onclick="toggleNoticia(${i})">
+      <div class="ni-check">${state.seleccionadas.includes(i)?'✓':''}</div>
+      <div style="flex:1">
+        <div class="ni-fuente ${n.cls}">● ${n.fuente}</div>
+        <div class="ni-titulo">${n.titulo}</div>
+        ${n.desc?`<div class="ni-desc">${n.desc.slice(0,150)}${n.desc.length>150?'...':''}</div>`:''}
+      </div>
+    </div>`).join('');
+  actualizarCounter();
+}
+
+function estaUsada(n){
+  try{
+    const usadas=JSON.parse(localStorage.getItem('noticiasUsadas')||'[]');
+    const key=n.titulo.slice(0,60).toLowerCase().trim();
+    const hoy=getFecha();
+    return usadas.some(u=>u.key===key&&u.fecha===hoy);
+  }catch(e){return false;}
+}
+
+function toggleNoticia(i){
+  const idx=state.seleccionadas.indexOf(i);
+  if(idx>-1)state.seleccionadas.splice(idx,1);
+  else{
+    if(state.seleccionadas.length>=8){toast('Máximo 8 noticias');return;}
+    state.seleccionadas.push(i);
+  }
+  renderNoticias();
+}
+
+function actualizarCounter(){
+  const n=state.seleccionadas.length;
+  document.getElementById('sel-count').textContent=n;
+  document.getElementById('counter-fill').style.width=(n/8*100)+'%';
+  const btn=document.getElementById('footer-main');
+  if(state.paso===1) btn.disabled=n<5;
+}
+
+// GUION
+async function armarGuion(){
+  const noticias=state.seleccionadas.map(i=>state.noticias[i]);
+  // 3 titulos deportivos de Olé RSS
+  let deportesTitulos=[];
+  try{
+    const r=await fetch('/api/rss?url='+encodeURIComponent('https://www.ole.com.ar/rss/ultimas-noticias/'));
+    if(r.ok){
+      const txt=await r.text();
+      const xml=new DOMParser().parseFromString(txt,'text/xml');
+      deportesTitulos=Array.from(xml.querySelectorAll('item'))
+        .slice(0,10)
+        .map(i=>i.querySelector('title')?.textContent?.trim()||'')
+        .filter(t=>t.length>10)
+        .slice(0,3);
+    }
+  }catch(e){}
+  let climaInicio='',climaFinal='',dolarTexto='',pronosticoTexto='',combustiblesTexto='',quinielaTexto='';
+
+  await Promise.all([
+    // CLIMA completo con pronostico 3 dias
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=-27.3671&longitude=-55.8961&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max,weathercode&hourly=temperature_2m,precipitation_probability,windspeed_10m&timezone=America/Argentina/Buenos_Aires&forecast_days=3')
+      .then(r=>r.json()).then(d=>{
+        const tmax=Math.round(d.daily.temperature_2m_max[0]);
+        const tmin=Math.round(d.daily.temperature_2m_min[0]);
+        const prob_lluvia=d.daily.precipitation_probability_max[0]||0;
+        const lluvia_mm=Math.round(d.daily.precipitation_sum[0]||0);
+        const viento=Math.round(d.daily.windspeed_10m_max[0]||0);
+        const wcode=d.daily.weathercode[0]||0;
+
+        // Temperatura actual (hora mas cercana)
+        const hora=new Date().getHours();
+        const tempActual=Math.round(d.hourly.temperature_2m[hora]||tmax);
+
+        // Expresiones según condiciones
+        let expresion='';
+        if(prob_lluvia>=70) expresion='¡Preparen el paraguas y las botas, se viene el agua!';
+        else if(prob_lluvia>=40) expresion='Puede haber algo de lluvia, mejor llevar el paraguas por las dudas.';
+        else if(tmax>=35) expresion='¡Mucho calor! Hidratación, sombra y cuidado con el sol.';
+        else if(tmax>=30) expresion='Un día caluroso. Ropa fresca y agua siempre a mano.';
+        else if(tmin<=10) expresion='¡Fresquito! Abríguense bien antes de salir.';
+        else if(viento>=50) expresion='Vientos fuertes previstos. Cuidado en ruta y con objetos sueltos.';
+        else expresion='Un día tranquilo para salir y disfrutar Misiones.';
+
+        // Cuando llueve según pronostico dia 2
+        const manana_lluvia=d.daily.precipitation_probability_max[1]||0;
+        const pasado_lluvia=d.daily.precipitation_probability_max[2]||0;
+        let proximaLluvia='';
+        if(prob_lluvia>=60) proximaLluvia='Se esperan lluvias para hoy.';
+        else if(manana_lluvia>=60) proximaLluvia='Las lluvias llegarían mañana.';
+        else if(pasado_lluvia>=60) proximaLluvia='Lluvias probables pasado mañana.';
+        else proximaLluvia='Sin lluvias importantes en los próximos tres días.';
+
+        climaInicio=`Temperatura actual en Misiones: ${tempActual} grados. Para hoy mínima de ${tmin} y máxima de ${tmax} grados${viento>30?', con vientos de hasta '+viento+' kilómetros por hora':''}.`;
+        climaFinal=`En cuanto al clima: ${expresion} ${proximaLluvia} Mañana se esperan temperaturas entre ${Math.round(d.daily.temperature_2m_min[1])} y ${Math.round(d.daily.temperature_2m_max[1])} grados.`;
+      }).catch(()=>{}),
+
+    // DOLAR
+    fetch('https://dolarapi.com/v1/dolares')
+      .then(r=>r.json()).then(d=>{
+        const oficial=d.find(x=>x.casa==='oficial');
+        const blue=d.find(x=>x.casa==='blue');
+        const mep=d.find(x=>x.casa==='bolsa');
+        const ccl=d.find(x=>x.casa==='contadoconliqui');
+        const partes=[];
+        if(oficial) partes.push(`el oficial a ${Math.round(oficial.venta)} pesos`);
+        if(blue) partes.push(`el blue a ${Math.round(blue.venta)} pesos`);
+        if(mep) partes.push(`el dólar bolsa a ${Math.round(mep.venta)} pesos`);
+        if(ccl) partes.push(`el contado con liquidación a ${Math.round(ccl.venta)} pesos`);
+        if(partes.length) dolarTexto=`En materia cambiaria, ${partes.join(', ')}.`;
+      }).catch(()=>{}),
+
+    // GRANOS - precio soja via API publica
+    fetch('https://dolarapi.com/v1/cotizaciones/granos')
+      .then(r=>r.json()).then(d=>{
+        const soja=d.find&&d.find(x=>(x.nombre||x.name||'').toLowerCase().includes('soja'));
+        if(soja&&(soja.precio||soja.value)){
+          const precio=Math.round(soja.precio||soja.value);
+          pronosticoTexto+=`La tonelada de soja cotiza a ${precio} pesos en el mercado de Rosario. `;
+        }
+      }).catch(()=>{}),
+
+    // TRANSITO - via servidor (key segura)
+    (async()=>{
+      try{
+        const r=await fetch('/api/transito',{signal:AbortSignal.timeout(8000)});
+        if(!r.ok) return;
+        const d=await r.json();
+        if(d.error||!d.rows) return;
+        if(d.status!=='OK') return;
+        const rows=d.rows[0]?.elements||[];
+        let t='';
+        const puente=rows[0];
+        if(puente?.status==='OK'){
+          const min=Math.round((puente.duration_in_traffic?.value||puente.duration?.value||0)/60);
+          const normal=Math.round((puente.duration?.value||0)/60);
+          const demora=min-normal;
+          t+=demora>10
+            ?`Puente a Encarnación con tránsito demorado, unos ${min} minutos desde el centro. `
+            :`Puente a Encarnación fluido, aproximadamente ${min} minutos desde el centro. `;
+        }
+        const apos=rows[1];
+        if(apos?.status==='OK'){
+          const min=Math.round((apos.duration_in_traffic?.value||apos.duration?.value||0)/60);
+          const normal=Math.round((apos.duration?.value||0)/60);
+          const demora=min-normal;
+          t+=demora>10
+            ?`Ruta a Apóstoles con demoras, calculá unos ${min} minutos. `
+            :`Ruta a Apóstoles sin inconvenientes, ${min} minutos. `;
+        }
+        if(t) pronosticoTexto+=t;
+      }catch(e){}
+    })(),
+  ]);
+
+  // Combustibles YPF referencia (se actualizan manualmente cuando cambian)
+  combustiblesTexto=''; // removido - sin API confiable
+
+
+
+  // Extraer primeras N oraciones completas sin cortar
+  function primerasOraciones(txt, maxOraciones=2){
+    // Separar por punto, signo de exclamacion o interrogacion
+    const ors = txt.match(/[^.!?]+[.!?]+/g) || [txt];
+    return ors.slice(0, maxOraciones).join(' ').trim();
+  }
+
+  // Para noticias politicas/economicas permitir 3 oraciones, resto 2
+  function esPoliticaEconomia(n){
+    const txt=(n.titulo+' '+(n.desc||'')).toLowerCase();
+    return ['gobierno','presidente','ministro','senado','diputado','congreso',
+      'economia','inflacion','inflación','presupuesto','deuda','banco','dolar',
+      'dólar','precio','impuesto','reforma','ley ','decreto','elección','eleccion',
+      'gobernador','intendente','municipal','provincial','nacional'].some(p=>txt.includes(p));
+  }
+
+  // Cortar texto respetando oraciones completas
+  // Busca el punto más cercano DESPUES de minChars, no antes
+  function cortarEnOracionCompleta(txt, minChars=80, maxChars=200){
+    if(txt.length <= maxChars) return txt;
+    // Buscar el primer punto/signo después de minChars
+    const resto = txt.slice(minChars);
+    const match = resto.match(/[.!?]/);
+    if(match){
+      const pos = minChars + match.index + 1;
+      return txt.slice(0, pos).trim();
+    }
+    // No hay punto → buscar última palabra antes de maxChars
+    return txt.slice(0, maxChars).replace(/\s\S+$/,'').trim() + '.';
+  }
+
+  const bloques=noticias.map(n=>{
+    let t=n.titulo.trim();
+    if(!t.match(/[.?!]$/)) t+='.';
+    const esPE = esPoliticaEconomia(n);
+    // Política/economía: buscar primer cierre después de 150 chars, máx 300
+    // Resto: primer cierre después de 80 chars, máx 180
+    const min = esPE ? 150 : 80;
+    const max = esPE ? 300 : 180;
+    let bajada = (n.desc||'').trim();
+    bajada = cortarEnOracionCompleta(bajada, min, max);
+    return t + (bajada ? ' ' + bajada : '');
+  });
+
+  function estimarDuracion(palabras){
+    const seg=Math.round(palabras/2.5);
+    const min=Math.floor(seg/60);
+    const s=seg%60;
+    if(min===0) return `${s} segundos`;
+    if(s===0) return `${min} ${min===1?'minuto':'minutos'}`;
+    return `${min} minuto${min>1?'s':''} y ${s} segundos`;
+  }
+  const intro='Noticias e información actualizada de Misiones Cuatro.';
+  const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
+
+  const MAX_PALABRAS_CUERPO = 220; // ~2 min al aire incluyendo datos
+  let cuerpo='';
+  let palabrasCuerpo=0;
+  for(const bloque of bloques){
+    const pw=bloque.split(/\s+/).filter(Boolean).length;
+    // Si agregar este bloque supera el maximo, parar (nunca cortar a la mitad)
+    if(palabrasCuerpo>0 && palabrasCuerpo+pw > MAX_PALABRAS_CUERPO) break;
+    cuerpo+=(cuerpo?'\n\n':'')+bloque;
+    palabrasCuerpo+=pw;
+  }
+
+  // Duracion real basada en el cuerpo ya armado
+  const palabrasGuion=cuerpo.split(/\s+/).filter(Boolean).length+
+    [climaInicio,dolarTexto,climaFinal].join(' ').split(/\s+/).filter(Boolean).length;
+  const durEst=estimarDuracion(palabrasGuion+40);
+  const introFinal='Misiones Cuatro, noticias en dos minutos. Todo lo que necesitás saber.';
+
+  const partes=[introFinal];
+  if(climaInicio)partes.push(climaInicio);
+  if(dolarTexto)partes.push(dolarTexto);
+  if(pronosticoTexto)partes.push(pronosticoTexto.trim());
+  partes.push(cuerpo);
+  if(climaFinal)partes.push(climaFinal);
+  if(dolarTexto)partes.push(dolarTexto);
+  if(deportesTitulos.length){
+    const items=deportesTitulos.map(t=>t.replace(/[.!?]$/,'').trim());
+    const depTexto='En deportes: '+items.join('. ')+'.';
+    partes.push(depTexto);
+  }
+  partes.push(cierre);
+
+  state.guion=partes.join('\n\n');
+  document.getElementById('guion-area').value=state.guion;
+  actualizarStats();
+  irA(2); // guion sigue siendo paso 2
+}
+
+function actualizarStats(){
+  const txt=document.getElementById('guion-area').value;
+  state.guion=txt;
+  const p=txt.trim().split(/\s+/).filter(Boolean).length;
+  const s=Math.round(p/2.8);
+  document.getElementById('guion-stats').textContent=`${p} palabras · ~${Math.floor(s/60)>0?Math.floor(s/60)+'m ':''}${s%60}s al aire`;
+}
+
+// VOCES
+async function cargarVoces(){
+  const sel=document.getElementById('voice-select');
+  sel.innerHTML=VOCES_DEFAULT.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  try{
+    const r=await fetch('/api/voices',{method:'POST'});
+    const d=await r.json();
+    console.log('Voices response:', JSON.stringify(d).slice(0,300));
+    if(d.debug) toast('Debug: '+d.debug+(d.msg?' — '+d.msg:''), 6000);
+    const voces=d.voices||[];
+    if(!voces.length) return;
+    sel.innerHTML='';
+    // Mis voces primero (las que el usuario guardó en su biblioteca)
+    const mias=voces.filter(v=>v.category==='cloned'||v.category==='professional');
+    const resto=voces.filter(v=>!mias.includes(v));
+    
+    if(mias.length){
+      const grp=document.createElement('optgroup');
+      grp.label='⭐ Mis voces';
+      mias.forEach(v=>{
+        const o=document.createElement('option');
+        o.value=v.voice_id;
+        o.textContent='⭐ '+v.name;
+        grp.appendChild(o);
+      });
+      sel.appendChild(grp);
+    }
+    
+    const grp2=document.createElement('optgroup');
+    grp2.label='Biblioteca ElevenLabs';
+    resto.slice(0,20).forEach(v=>{
+      const o=document.createElement('option');
+      o.value=v.voice_id;
+      const acc=v.labels?.accent||v.labels?.language||'';
+      o.textContent=v.name+(acc?' ('+acc+')':'');
+      grp2.appendChild(o);
+    });
+    sel.appendChild(grp2);
+    toast('✓ '+voces.length+' voces · '+mias.length+' tuyas');
+  }catch(e){
+    console.warn('voces:',e.message);
+  }
+}
+
+// MUSICA
+function generarMusicaNews(ctx,dur,inicioVoz=1.5,finDolar=16){
+  const master=ctx.createGain();
+  const ct=ctx.currentTime;
+  master.gain.setValueAtTime(0,ct);
+  master.gain.linearRampToValueAtTime(0.18,ct+0.3);
+  master.gain.setValueAtTime(0.18,ct+inicioVoz);
+  master.gain.linearRampToValueAtTime(0.06,ct+inicioVoz+1);
+  master.gain.setValueAtTime(0.06,ct+finDolar);
+  master.gain.linearRampToValueAtTime(0.015,ct+finDolar+1.5);
+  master.gain.setValueAtTime(0.015,ct+dur-4);
+  master.gain.linearRampToValueAtTime(0.10,ct+dur-2);
+  master.gain.linearRampToValueAtTime(0,ct+dur);
+  master.connect(ctx.destination);
+
+  const seq=[[1046,0,.10],[1318,.13,.10],[1568,.27,.16],[1318,.47,.10],
+             [1046,.61,.10],[1568,.75,.22],[1318,1.02,.10],[1046,1.16,.10],
+             [1175,1.30,.16],[1046,1.50,.10],[1568,1.65,.30]];
+  function tocar(off){
+    seq.forEach(([f,t,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sine';o.frequency.value=f;
+      const st=ct+off+t;
+      g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.8,st+.015);g.gain.linearRampToValueAtTime(0,st+d);
+      o.connect(g);g.connect(master);o.start(st);o.stop(st+d+.05);
+    });
+  }
+  tocar(0);tocar(dur-2.5);
+  const pad=ctx.createOscillator(),pg=ctx.createGain();
+  pad.type='triangle';pad.frequency.value=196;pg.gain.value=0.4;
+  pad.connect(pg);pg.connect(master);pad.start();pad.stop(ct+dur+0.5);
+  return master;
+}
+
+function setProg(pct,label){
+  document.getElementById('pwrap').classList.add('v');
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('plabel').textContent=label;
+}
+function hideProg(){document.getElementById('pwrap').classList.remove('v');}
+
+function onProviderChange(){
+  const p=document.getElementById('tts-provider').value;
+  document.getElementById('eleven-config').style.display=p==='eleven'?'':'none';
+  document.getElementById('google-config').style.display=p==='google'?'':'none';
+}
+
+function numALetras(n){
+  n=Math.round(Math.abs(n));
+  if(n===0)return'cero';
+  const u=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'];
+  const d=['','','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+  const c=['','cien','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
+  function g(n){if(n<30)return u[n]||'';if(n<100)return d[Math.floor(n/10)]+(n%10?' y '+u[n%10]:'');if(n===100)return'cien';return c[Math.floor(n/100)]+(n%100?' '+g(n%100):'');}
+  let r='';
+  if(n>=1000000){r+=g(Math.floor(n/1000000))+(Math.floor(n/1000000)===1?' millón':' millones')+' ';n%=1000000;}
+  if(n>=1000){const m=Math.floor(n/1000);r+=(m===1?'mil':g(m)+' mil')+' ';n%=1000;}
+  if(n>0)r+=g(n);
+  return r.trim();
+}
+
+function limpiarTextoTTS(txt){
+  // Siglas y símbolos
+  txt=txt
+    .replace(/MEP/g,'dólar bolsa')
+    .replace(/CCL/g,'contado con liquidación')
+    .replace(/PBI/g,'producto bruto interno')
+    .replace(/IPC/g,'índice de precios')
+    .replace(/INDEC/g,'Indec')
+    .replace(/BCRA/g,'Banco Central')
+    .replace(/ANSES/g,'Anses')
+    .replace(/IVA/g,'iva')
+    .replace(/YPF/g,'Y P F')
+    .replace(/USD/g,'dólares')
+    .replace(/&/g,'y');
+
+  // ° inteligente: busca en TODO lo que sigue, no solo la primera palabra
+  const palabrasOrdinales=['período','periodo','sesión','sesion','sesiones','aniversario',
+    'edición','edicion','congreso','asamblea','cumbre','conferencia','foro','encuentro',
+    'jornada','capítulo','capitulo','reunión','reunion','torneo','campeonato','juego'];
+  function esPalabraOrdinal(contexto){
+    const low=contexto.toLowerCase();
+    return palabrasOrdinales.some(p=>low.includes(p));
+  }
+  function aOrdinal(n){
+    const ords=['','primer','segundo','tercer','cuarto','quinto','sexto','séptimo',
+      'octavo','noveno','décimo','undécimo','duodécimo'];
+    return n<=12?ords[n]:numALetras(n)+'°';
+  }
+  // Reemplazar ° mirando el contexto completo (hasta 40 chars adelante)
+  txt=txt.replace(/(\d+)°/g,(m,num,offset)=>{
+    const n=parseInt(num);
+    const contexto=txt.slice(offset+m.length, offset+m.length+50);
+    if(esPalabraOrdinal(contexto)) return aOrdinal(n);
+    if(n===1) return 'primero';
+    if(n===2) return 'segundo';
+    if(n===3) return 'tercero';
+    return numALetras(n)+' grados';
+  });
+
+  // Porcentajes
+  txt=txt.replace(/(\d+)[,.](\d+)\s*%/g,(m,a,b)=>numALetras(parseInt(a))+' coma '+numALetras(parseInt(b))+' por ciento');
+  txt=txt.replace(/(\d+)\s*%/g,(m,a)=>numALetras(parseInt(a))+' por ciento');
+
+  // Decimales: 1449,50 → "mil cuatrocientos cuarenta y nueve con cincuenta"
+  txt=txt.replace(/(\d[\d.]*)[,.](\d+)/g,(m,a,b)=>{
+    const dec=parseInt(b);
+    if(dec===0) return numALetras(parseInt(a.replace(/\./g,'')));
+    return numALetras(parseInt(a.replace(/\./g,'')))+' con '+numALetras(dec);
+  });
+
+  // Números grandes
+  txt=txt.replace(/(\d[\d.]{2,})/g,(m,a)=>{
+    const n=parseInt(a.replace(/\./g,''));
+    return isNaN(n)?m:numALetras(n);
+  });
+
+  return txt.trim();
+}
+
+async function generarVoz(guion){
+  guion=limpiarTextoTTS(guion);
+  const provider=document.getElementById('tts-provider').value;
+  let voz='';
+  if(provider==='google') voz=document.getElementById('google-voice').value;
+  else voz=document.getElementById('voice-select').value;
+
+  // Todo pasa por el servidor Vercel — las claves nunca están en el browser
+  const r=await fetch('/api/tts',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({texto:guion, proveedor:provider, voz})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||'Error TTS '+r.status);}
+  return await r.blob();
+}
+
+async function generarAudio(){
+  const guion=document.getElementById('guion-area').value.trim();
+  if(!guion){toast('El guión está vacío');return;}
+
+  document.getElementById('footer-main').disabled=true;
+  document.getElementById('result-audio').classList.remove('v');
+
+  // Intentar mantener pantalla activa
+  let wakeLock=null;
+  try{ wakeLock=await navigator.wakeLock?.request('screen'); }catch(e){}
+
+  try{
+    // Agregar mensajes especiales al guion
+    const msgInicio=document.getElementById('msg-inicio')?.value.trim()||'';
+    const msgFinal=document.getElementById('msg-final')?.value.trim()||'';
+    let guionFinal=guion;
+    if(msgInicio||msgFinal){
+      const lineas=guion.split('\n');
+      if(msgInicio) lineas.splice(1,0,'\n'+msgInicio+(msgInicio.match(/[.!?]$/)?'':'.'));
+      if(msgFinal) lineas.splice(lineas.length-1,0,'\n'+msgFinal+(msgFinal.match(/[.!?]$/)?'':'.'));
+      guionFinal=lineas.join('\n');
+      document.getElementById('guion-area').value=guionFinal;
+    }
+
+    setProg(20,'Generando voz... ⚠️ no bloquees la pantalla');
+    const vozBlob=await generarVoz(limpiarTextoTTS(guionFinal));
+    const vozAb=await vozBlob.arrayBuffer();
+
+    state.mp3Blob=new Blob([vozAb.slice(0)],{type:'audio/mpeg'});
+
+    const musicType=document.getElementById('music-select').value;
+    if(musicType!=='none'){
+      setProg(60,'Mezclando música...');
+      try{
+        const mp3Mix=await mezclarConFFmpeg(state.mp3Blob,'radio');
+        state.audioBlob=mp3Mix;
+      }catch(e){
+        console.warn('FFmpeg falló, mezcla en browser');
+        const [introAb,outroAb]=await Promise.all([
+          fetch('/intro.mp3').then(r=>r.arrayBuffer()),
+          fetch('/outro.mp3').then(r=>r.arrayBuffer()),
+        ]);
+        const ctx=new AudioContext({sampleRate:44100});
+        const [introDec,vozDec,outroDec]=await Promise.all([
+          ctx.decodeAudioData(introAb),
+          ctx.decodeAudioData(vozAb.slice(0)),
+          ctx.decodeAudioData(outroAb),
+        ]);
+        await ctx.close();
+        const totalLen=introDec.length+vozDec.length+outroDec.length;
+        const ctx2=new AudioContext({sampleRate:44100});
+        const buf=ctx2.createBuffer(2,totalLen,44100);
+        for(let ch=0;ch<2;ch++){
+          const out=buf.getChannelData(ch);
+          out.set(introDec.getChannelData(Math.min(ch,introDec.numberOfChannels-1)),0);
+          out.set(vozDec.getChannelData(Math.min(ch,vozDec.numberOfChannels-1)),introDec.length);
+          out.set(outroDec.getChannelData(Math.min(ch,outroDec.numberOfChannels-1)),introDec.length+vozDec.length);
+        }
+        await ctx2.close();
+        state.audioBlob=audioBufferToWav(buf);
+      }
+    } else {
+      state.audioBlob=state.mp3Blob;
+    }
+
+    setProg(100,'¡Listo!');await sleep(200);hideProg();
+    const url=URL.createObjectURL(state.audioBlob);
+    document.getElementById('player').src=url;
+    document.getElementById('result-audio').classList.add('v');
+    document.getElementById('footer-main').style.display='none';
+    toast('✓ Flash listo');
+  }catch(e){
+    hideProg();toast('Error: '+e.message,5000);console.error(e);
+  } finally {
+    try{ wakeLock?.release(); }catch(e){}
+    document.getElementById('footer-main').disabled=false;
+  }
+}
+
+
+
+function blobToBase64(blob){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+function getFecha(){
+  return new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+}
+function descargarBlob(blob,nombre){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=nombre;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+async function descargarRadio(formato='mp3'){
+  const blob=state.audioBlob||state.mp3Blob;
+  if(!blob){toast('Generá el audio primero');return;}
+  const fecha=getFecha();
+  if(formato==='wav'){
+    toast('Convirtiendo a WAV...');
+    try{
+      const ab=await blob.arrayBuffer();
+      const ctx=new AudioContext();
+      const decoded=await ctx.decodeAudioData(ab);
+      await ctx.close();
+      descargarBlob(audioBufferToWav(decoded),`flash-radio-${fecha}.wav`);
+      toast('✓ WAV descargado');
+    }catch(e){
+      descargarBlob(blob,`flash-radio-${fecha}.mp3`);
+      toast('✓ MP3 descargado');
+    }
+  } else {
+    descargarBlob(blob,`flash-radio-${fecha}.mp3`);
+    toast('✓ MP3 descargado para radio');
+  }
+}
+
+async function mezclarConFFmpeg(blob, calidad='radio'){
+  const vozB64=await blobToBase64(blob);
+  const r=await fetch('/api/mp3mix',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({voz:vozB64, calidad})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||'Error '+r.status);}
+  return await r.blob();
+}
+
+async function compartirWasap(){
+  const blob=state.mp3Blob||state.audioBlob;
+  if(!blob){toast('Generá el audio primero');return;}
+  const btn=document.getElementById('btn-dl-wasap');
+  btn.disabled=true;
+  toast('Preparando versión liviana...');
+  const fecha=getFecha();
+  try{
+    // Versión liviana para WhatsApp: 64kbps mono
+    const wasapBlob=await mezclarConFFmpeg(state.mp3Blob,'wasap');
+    const archivo=new File([wasapBlob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
+    const mb=(wasapBlob.size/1024/1024).toFixed(1);
+    // Web Share API
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
+      try{
+        await navigator.share({files:[archivo],title:'Flash Informativo Misiones Cuatro'});
+        btn.disabled=false;return;
+      }catch(e){ if(e.name==='AbortError'){btn.disabled=false;return;} }
+    }
+    descargarBlob(wasapBlob,`flash-wasap-${fecha}.mp3`);
+    toast(`✓ MP3 liviano descargado (${mb} MB)`);
+  }catch(e){
+    // Fallback: usar audioBlob directo
+    const archivo=new File([blob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
+      try{ await navigator.share({files:[archivo],title:'Flash Informativo Misiones Cuatro'});btn.disabled=false;return; }catch(e2){}
+    }
+    descargarBlob(blob,`flash-wasap-${fecha}.mp3`);
+    toast('✓ MP3 descargado para WhatsApp');
+  }
+  btn.disabled=false;
+}
+
+function audioBufferToWav(buf){
+  const nc=buf.numberOfChannels,len=buf.length,sr=buf.sampleRate;
+  const ab=new ArrayBuffer(44+len*nc*2),v=new DataView(ab);
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF');v.setUint32(4,36+len*nc*2,true);w(8,'WAVE');w(12,'fmt ');
+  v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,nc,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*nc*2,true);v.setUint16(32,nc*2,true);
+  v.setUint16(34,16,true);w(36,'data');v.setUint32(40,len*nc*2,true);
+  let off=44;
+  for(let i=0;i<len;i++)for(let c=0;c<nc;c++){
+    const s=Math.max(-1,Math.min(1,buf.getChannelData(c)[i]));
+    v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;
+  }
+  return new Blob([ab],{type:'audio/wav'});
+}
+
+function resetAudio(){
+  // Ocultar resultado y mostrar boton generar de nuevo
+  document.getElementById('result-audio').classList.remove('v');
+  const btn=document.getElementById('footer-main');
+  btn.style.display='';
+  btn.disabled=false;
+  state.audioBlob=null;
+  state.mp3Blob=null;
+  state.renderedBuffer=null;
+}
+
+function volverGuion(){
+  // Volver al guion para editar
+  irA(2);
+}
+
+function finalizar(){
+  // Marcar noticias usadas en localStorage
+  const usadas=JSON.parse(localStorage.getItem('noticiasUsadas')||'[]');
+  const hoy=getFecha();
+  state.seleccionadas.forEach(i=>{
+    const n=state.noticias[i];
+    if(n){
+      const key=n.titulo.slice(0,60).toLowerCase().trim();
+      if(!usadas.find(u=>u.key===key)){
+        usadas.push({key, titulo:n.titulo.slice(0,80), fecha:hoy});
+      }
+    }
+  });
+  // Guardar solo las ultimas 50
+  const recientes=usadas.slice(-50);
+  localStorage.setItem('noticiasUsadas', JSON.stringify(recientes));
+  nuevoFlash();
+  toast('✓ Flash finalizado. Noticias marcadas como usadas.');
+}
+
+function resetUsadas(){
+  localStorage.removeItem('noticiasUsadas');
+  toast('✓ Noticias reseteadas');
+  // Re-renderizar si estamos en el panel de noticias
+  if(state.paso===1) renderNoticias();
+}
+
+function nuevoFlash(){
+  state.seleccionadas=[];state.guion='';state.audioBlob=null;state.renderedBuffer=null;state.mp3Blob=null;
+  document.getElementById('result-audio').classList.remove('v');
+  document.getElementById('footer-main').style.display='';
+  document.getElementById('guion-area').value='';
+  irA(0);
+}
+
+window.addEventListener('load',cargarVoces);
+</script>
+</body>
+</html>
