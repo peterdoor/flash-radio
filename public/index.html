@@ -721,10 +721,12 @@ async function armarGuion(){
     let bajada = (n.desc||'').trim();
     bajada = cortarEnOracionCompleta(bajada, min, max);
 
-    // Transición de categoría — solo si cambia
+    // Transición de categoría
     let transicion = '';
     if(cat !== ultimaCategoria){
-      transicion = TRANSICIONES[cat] || 'Además,';
+      // Primera noticia: sin transicion (la pusimos arriba)
+      // Resto: transicion de categoria
+      if(ultimaCategoria !== '') transicion = TRANSICIONES[cat] || 'Además,';
       ultimaCategoria = cat;
     }
 
@@ -760,16 +762,17 @@ async function armarGuion(){
   if(pronosticoTexto) partes.push(pronosticoTexto.trim());
 
   // Cuerpo de noticias con transiciones
+  partes.push('Los principales títulos.');
   partes.push(cuerpo);
 
-  // Pronóstico extendido al cierre — más detallado
-  if(climaFinal) partes.push(climaFinal);
-
-  // Deportes
+  // Deportes antes del cierre climático
   if(deportesTitulos.length){
     const items = deportesTitulos.map(t => t.replace(/[.!?]$/,'').trim());
     partes.push('En deportes: ' + items.join('. ') + '.');
   }
+
+  // Pronóstico extendido al cierre
+  if(climaFinal) partes.push(climaFinal);
 
   partes.push(cierre);
 
@@ -918,17 +921,26 @@ function limpiarTextoTTS(txt){
   function aOrdinal(n){
     const ords=['','primer','segundo','tercer','cuarto','quinto','sexto','séptimo',
       'octavo','noveno','décimo','undécimo','duodécimo'];
-    return n<=12?ords[n]:numALetras(n)+'°';
+    if(n<=12) return ords[n];
+    // Para números mayores usar ordinal compuesto
+    const decenas=['','décimo','vigésimo','trigésimo','cuadragésimo','quincuagésimo',
+      'sexagésimo','septuagésimo','octogésimo','nonagésimo'];
+    const unidades=['','primero','segundo','tercero','cuarto','quinto','sexto','séptimo',
+      'octavo','noveno'];
+    const d=Math.floor(n/10), u=n%10;
+    if(u===0) return decenas[d];
+    return decenas[d]+' '+unidades[u];
   }
-  // Reemplazar ° mirando el contexto completo (hasta 40 chars adelante)
-  txt=txt.replace(/(\d+)°/g,(m,num,offset)=>{
+  // Reemplazar ° mirando el contexto ANTES y DESPUES
+  // Usar split para poder mirar adelante correctamente
+  txt=txt.replace(/(\d+)°\s*/g,(m,num,offset)=>{
     const n=parseInt(num);
-    const contexto=txt.slice(offset+m.length, offset+m.length+50);
-    if(esPalabraOrdinal(contexto)) return aOrdinal(n);
-    if(n===1) return 'primero';
-    if(n===2) return 'segundo';
-    if(n===3) return 'tercero';
-    return numALetras(n)+' grados';
+    const contexto=txt.slice(offset+m.length, offset+m.length+60);
+    if(esPalabraOrdinal(contexto)) return aOrdinal(n)+' ';
+    if(n===1) return 'primero ';
+    if(n===2) return 'segundo ';
+    if(n===3) return 'tercero ';
+    return numALetras(n)+' grados ';
   });
 
   // Porcentajes
