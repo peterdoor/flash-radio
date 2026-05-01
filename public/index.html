@@ -189,10 +189,9 @@
   /* TOAST */
   .dev-footer{
     position:fixed;bottom:calc(var(--footer-h) + 2px);right:8px;
-    display:none;align-items:center;gap:.5rem;z-index:50;opacity:.25;
+    display:flex;align-items:center;gap:.5rem;z-index:50;opacity:.25;
     transition:opacity .2s;
   }
-  .dev-footer.visible{display:flex;}
   .dev-footer:hover{opacity:.8;}
   .dev-version{font-family:var(--mono);font-size:.52rem;color:#666;letter-spacing:1px;}
   .dev-reset{
@@ -353,7 +352,7 @@
 
 <div class="toast" id="toast"></div>
 
-<div class="dev-footer" id="dev-footer">
+<div class="dev-footer">
   <span class="dev-version">DoorApp v1.0</span>
   <button class="dev-reset" onclick="resetUsadas()" title="Resetear noticias usadas">↺ reset</button>
 </div>
@@ -373,7 +372,7 @@ const VOCES_DEFAULT=[
   {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Facundo'},
   {id:'ByVRQtaK1WDOvTmP1PKO',name:'⭐ Mi voz 2'},
 ];
-const state={paso:0,noticias:[],seleccionadas:[],guion:'',audioBlob:null,renderedBuffer:null,mp3Blob:null,wasapBlob:null};
+const state={paso:0,noticias:[],seleccionadas:[],guion:'',audioBlob:null,renderedBuffer:null,mp3Blob:null};
 
 // RELOJ
 function tick(){const n=new Date();document.getElementById('reloj').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');}
@@ -428,10 +427,6 @@ function irA(n){
     main.disabled=false;
     main.className='btn btn-primary';
   }
-
-  // Dev footer solo en paso 0
-  const df=document.getElementById('dev-footer');
-  if(df) df.classList.toggle('visible', n===0);
 
   // Paso 4: mostrar footer con boton generar
   // Solo ocultar el footer si ya generó (los botones están dentro del resultado)
@@ -1056,20 +1051,11 @@ async function generarAudio(){
       state.audioBlob=state.mp3Blob;
     }
 
-    // state.audioBlob ya tiene intro+voz+outro mezclados
-    // Ahora hacer version wasap liviana del mismo audio completo
-    setProg(90,'Generando versión WhatsApp...');
-    try{
-      const b64=await blobToBase64(state.audioBlob);
-      const rWasap=await fetch('/api/mp3mix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({voz:b64,calidad:'wasap'})});
-      if(rWasap.ok) state.wasapBlob=await rWasap.blob();
-      else state.wasapBlob=state.audioBlob;
-    }catch(e){ state.wasapBlob=state.audioBlob; }
-
     setProg(100,'¡Listo!');await sleep(200);hideProg();
     const url=URL.createObjectURL(state.audioBlob);
     document.getElementById('player').src=url;
     document.getElementById('result-audio').classList.add('v');
+    // Ocultar sticky footer ahora que los botones están en el resultado
     document.getElementById('sticky-footer').style.display='none';
     document.getElementById('scroll-area').style.paddingBottom='1rem';
     toast('✓ Flash listo');
@@ -1120,19 +1106,31 @@ async function mezclarConFFmpeg(blob, calidad='radio'){
 }
 
 async function compartirWasap(){
-  const blob=state.wasapBlob||state.audioBlob||state.mp3Blob;
+  const blob=state.audioBlob||state.mp3Blob;
   if(!blob){toast('Generá el audio primero');return;}
+  const btn=document.getElementById('btn-dl-wasap');
+  btn.disabled=true;
+  toast('Preparando versión liviana...');
   const fecha=getFecha();
-  const mb=(blob.size/1024/1024).toFixed(1);
-  const archivo=new File([blob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
-  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
-    try{
-      await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'});
-      return;
-    }catch(e){ if(e.name==='AbortError') return; }
+  try{
+    // Recomprimir a 64kbps mono para WhatsApp via servidor
+    const wasapBlob=await mezclarConFFmpeg(blob,'wasap');
+    const mb=(wasapBlob.size/1024/1024).toFixed(1);
+    const archivo=new File([wasapBlob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
+      try{
+        await navigator.share({files:[archivo],title:'Flash Informativo Misiones Cuatro'});
+        btn.disabled=false;return;
+      }catch(e){ if(e.name==='AbortError'){btn.disabled=false;return;} }
+    }
+    descargarBlob(wasapBlob,`flash-wasap-${fecha}.mp3`);
+    toast(`✓ WhatsApp listo (${mb} MB)`);
+  }catch(e){
+    // Fallback: mismo MP3 de radio
+    descargarBlob(blob,`flash-wasap-${fecha}.mp3`);
+    toast('✓ MP3 descargado para WhatsApp');
   }
-  descargarBlob(blob,`flash-wasap-${fecha}.mp3`);
-  toast(`✓ WhatsApp (${mb} MB)`);
+  btn.disabled=false;
 }
 
 function audioBufferToWav(buf){
@@ -1152,18 +1150,14 @@ function audioBufferToWav(buf){
 }
 
 function resetAudio(){
-  state.audioBlob=null;
-  state.mp3Blob=null;
-  state.renderedBuffer=null;
-  state.wasapBlob=null;
+  // Ocultar resultado y mostrar boton generar de nuevo
   document.getElementById('result-audio').classList.remove('v');
-  // Volver a mostrar sticky footer con boton generar
-  const sf=document.getElementById('sticky-footer');
-  sf.style.display='';
-  document.getElementById('scroll-area').style.paddingBottom='';
   const btn=document.getElementById('footer-main');
   btn.style.display='';
   btn.disabled=false;
+  state.audioBlob=null;
+  state.mp3Blob=null;
+  state.renderedBuffer=null;
 }
 
 function volverGuion(){
