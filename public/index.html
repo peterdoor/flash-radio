@@ -588,8 +588,28 @@ async function armarGuion(){
         else if(pasado_lluvia>=60) proximaLluvia='Lluvias probables pasado mañana.';
         else proximaLluvia='Sin lluvias importantes en los próximos tres días.';
 
-        climaInicio=`Temperatura actual en Misiones: ${tempActual} grados. Para hoy mínima de ${tmin} y máxima de ${tmax} grados${viento>30?', con vientos de hasta '+viento+' kilómetros por hora':''}.`;
-        climaFinal=`En cuanto al clima: ${expresion} ${proximaLluvia} Mañana se esperan temperaturas entre ${Math.round(d.daily.temperature_2m_min[1])} y ${Math.round(d.daily.temperature_2m_max[1])} grados.`;
+        climaInicio=`En Misiones, ${tempActual} grados en este momento. Para hoy, mínima de ${tmin} y máxima de ${tmax}${viento>30?', vientos de hasta '+viento+' kilómetros por hora':''}.`;
+
+        // Pronostico extendido radial
+        const tmin2=Math.round(d.daily.temperature_2m_min[1]);
+        const tmax2=Math.round(d.daily.temperature_2m_max[1]);
+        const tmin3=Math.round(d.daily.temperature_2m_min[2]);
+        const tmax3=Math.round(d.daily.temperature_2m_max[2]);
+        const prob2=d.daily.precipitation_probability_max[1]||0;
+        const prob3=d.daily.precipitation_probability_max[2]||0;
+        const viento2=Math.round(d.daily.windspeed_10m_max[1]||0);
+
+        // Proximo turno horario
+        const horaActual=new Date().getHours();
+        let proximas='';
+        const prob_proximas=d.hourly.precipitation_probability.slice(horaActual, horaActual+6);
+        const prob_max_proximas=Math.max(...prob_proximas);
+        if(prob_max_proximas>=70) proximas='Para las próximas horas se esperan lluvias. ';
+        else if(prob_max_proximas>=40) proximas='Posibilidad de lluvias en las próximas horas. ';
+        else if(tmax>=35) proximas='Se mantiene el calor intenso durante el día. ';
+        else proximas='';
+
+        climaFinal=`Para cerrar, el tiempo. ${expresion} ${proximas}${proximaLluvia} Mañana entre ${tmin2} y ${tmax2} grados${prob2>=60?' con lluvias probables':viento2>30?' y vientos moderados':''}. El miércoles se esperan entre ${tmin3} y ${tmax3} grados.`;
       }).catch(()=>{}),
 
     // DOLAR
@@ -655,96 +675,108 @@ async function armarGuion(){
 
 
 
-  // Extraer primeras N oraciones completas sin cortar
-  function primerasOraciones(txt, maxOraciones=2){
-    // Separar por punto, signo de exclamacion o interrogacion
-    const ors = txt.match(/[^.!?]+[.!?]+/g) || [txt];
-    return ors.slice(0, maxOraciones).join(' ').trim();
-  }
-
-  // Para noticias politicas/economicas permitir 3 oraciones, resto 2
-  function esPoliticaEconomia(n){
+  // ── CATEGORIZAR noticias ──────────────────────────────────
+  function categoriaNoticia(n){
     const txt=(n.titulo+' '+(n.desc||'')).toLowerCase();
-    return ['gobierno','presidente','ministro','senado','diputado','congreso',
-      'economia','inflacion','inflación','presupuesto','deuda','banco','dolar',
-      'dólar','precio','impuesto','reforma','ley ','decreto','elección','eleccion',
-      'gobernador','intendente','municipal','provincial','nacional'].some(p=>txt.includes(p));
+    if(n.fuente==='Euronews') return 'internacionales';
+    if(['muerto','muer','fallec','accidente','herido','choque','incendio','robó','robo',
+        'detenid','preso','narcotráf','crimen','homicidio','secuest','violencia'].some(p=>txt.includes(p))) return 'policiales';
+    if(['presidente','gobernador','intendente','ministro','senado','diputado','congreso',
+        'elección','eleccion','partido','candidato','decreto','ley ','reforma'].some(p=>txt.includes(p))) return 'política';
+    if(['economia','inflacion','inflación','dólar','dolar','precio','impuesto',
+        'presupuesto','deuda','banco','mercado','pesos','inversión'].some(p=>txt.includes(p))) return 'economía';
+    if(['salud','hospital','médico','medico','enfermedad','vacuna','dengue'].some(p=>txt.includes(p))) return 'salud';
+    if(['obra','corte','ruta','tránsito','municipio','barrio','vecinos'].some(p=>txt.includes(p))) return 'locales';
+    return 'información general';
   }
 
-  // Cortar texto respetando oraciones completas
-  // Busca el punto más cercano DESPUES de minChars, no antes
+  const TRANSICIONES = {
+    'policiales':          'En materia policial,',
+    'política':            'En política,',
+    'economía':            'En el plano económico,',
+    'internacionales':     'A nivel internacional,',
+    'salud':               'En salud,',
+    'locales':             'En noticias locales,',
+    'información general': 'Además,',
+  };
+
   function cortarEnOracionCompleta(txt, minChars=80, maxChars=200){
     if(txt.length <= maxChars) return txt;
-    // Buscar el primer punto/signo después de minChars
     const resto = txt.slice(minChars);
     const match = resto.match(/[.!?]/);
-    if(match){
-      const pos = minChars + match.index + 1;
-      return txt.slice(0, pos).trim();
-    }
-    // No hay punto → buscar última palabra antes de maxChars
+    if(match) return txt.slice(0, minChars + match.index + 1).trim();
     return txt.slice(0, maxChars).replace(/\s\S+$/,'').trim() + '.';
   }
 
-  const bloques=noticias.map(n=>{
-    let t=n.titulo.trim();
-    if(!t.match(/[.?!]$/)) t+='.';
-    const esPE = esPoliticaEconomia(n);
-    // Política/economía: buscar primer cierre después de 150 chars, máx 300
-    // Resto: primer cierre después de 80 chars, máx 180
-    const min = esPE ? 150 : 80;
-    const max = esPE ? 300 : 180;
+  // Armar bloques con categoría + título + bajada
+  let ultimaCategoria = '';
+  const bloques = noticias.map(n => {
+    const cat = categoriaNoticia(n);
+    let t = n.titulo.trim();
+    if(!t.match(/[.?!]$/)) t += '.';
+
+    const esPE = ['política','economía'].includes(cat);
+    const min = esPE ? 120 : 70;
+    const max = esPE ? 260 : 160;
     let bajada = (n.desc||'').trim();
     bajada = cortarEnOracionCompleta(bajada, min, max);
-    return t + (bajada ? ' ' + bajada : '');
+
+    // Transición de categoría — solo si cambia
+    let transicion = '';
+    if(cat !== ultimaCategoria){
+      transicion = TRANSICIONES[cat] || 'Además,';
+      ultimaCategoria = cat;
+    }
+
+    // Armar el bloque: [Transición] [Título]. [Bajada].
+    const textoNoticia = bajada ? `${t} ${bajada}` : t;
+    return transicion ? `${transicion} ${textoNoticia}` : textoNoticia;
   });
 
-  function estimarDuracion(palabras){
-    const seg=Math.round(palabras/2.5);
-    const min=Math.floor(seg/60);
-    const s=seg%60;
-    if(min===0) return `${s} segundos`;
-    if(s===0) return `${min} ${min===1?'minuto':'minutos'}`;
-    return `${min} minuto${min>1?'s':''} y ${s} segundos`;
-  }
-  const intro='Noticias e información actualizada de Misiones Cuatro.';
-  const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
-
-  const MAX_PALABRAS_CUERPO = 220; // ~2 min al aire incluyendo datos
-  let cuerpo='';
-  let palabrasCuerpo=0;
+  // Limitar cuerpo a ~220 palabras
+  const MAX_PALABRAS = 220;
+  let cuerpo = '';
+  let palabrasCuerpo = 0;
   for(const bloque of bloques){
-    const pw=bloque.split(/\s+/).filter(Boolean).length;
-    // Si agregar este bloque supera el maximo, parar (nunca cortar a la mitad)
-    if(palabrasCuerpo>0 && palabrasCuerpo+pw > MAX_PALABRAS_CUERPO) break;
-    cuerpo+=(cuerpo?'\n\n':'')+bloque;
-    palabrasCuerpo+=pw;
+    const pw = bloque.split(/\s+/).filter(Boolean).length;
+    if(palabrasCuerpo > 0 && palabrasCuerpo + pw > MAX_PALABRAS) break;
+    cuerpo += (cuerpo ? '\n\n' : '') + bloque;
+    palabrasCuerpo += pw;
   }
 
-  // Duracion real basada en el cuerpo ya armado
-  const palabrasGuion=cuerpo.split(/\s+/).filter(Boolean).length+
-    [climaInicio,dolarTexto,climaFinal].join(' ').split(/\s+/).filter(Boolean).length;
-  const durEst=estimarDuracion(palabrasGuion+40);
-  const introFinal='Misiones Cuatro, noticias en dos minutos. Todo lo que necesitás saber.';
+  // ── ARMAR GUIÓN FINAL estilo radial ──────────────────────
+  const intro = 'Misiones Cuatro, noticias en dos minutos. Todo lo que necesitás saber.';
+  const cierre = 'Eso es todo por ahora. Seguimos en Misiones Cuatro.';
 
-  const partes=[introFinal];
-  if(climaInicio)partes.push(climaInicio);
-  if(dolarTexto)partes.push(dolarTexto);
-  if(pronosticoTexto)partes.push(pronosticoTexto.trim());
+  const partes = [intro];
+
+  // Clima de apertura — breve
+  if(climaInicio) partes.push(climaInicio);
+
+  // Dólar — una sola vez, al inicio
+  if(dolarTexto) partes.push(dolarTexto);
+
+  // Tránsito si hay
+  if(pronosticoTexto) partes.push(pronosticoTexto.trim());
+
+  // Cuerpo de noticias con transiciones
   partes.push(cuerpo);
-  if(climaFinal)partes.push(climaFinal);
-  if(dolarTexto)partes.push(dolarTexto);
+
+  // Pronóstico extendido al cierre — más detallado
+  if(climaFinal) partes.push(climaFinal);
+
+  // Deportes
   if(deportesTitulos.length){
-    const items=deportesTitulos.map(t=>t.replace(/[.!?]$/,'').trim());
-    const depTexto='En deportes: '+items.join('. ')+'.';
-    partes.push(depTexto);
+    const items = deportesTitulos.map(t => t.replace(/[.!?]$/,'').trim());
+    partes.push('En deportes: ' + items.join('. ') + '.');
   }
+
   partes.push(cierre);
 
-  state.guion=partes.join('\n\n');
-  document.getElementById('guion-area').value=state.guion;
+  state.guion = partes.join('\n\n');
+  document.getElementById('guion-area').value = state.guion;
   actualizarStats();
-  irA(2); // guion sigue siendo paso 2
+  irA(2);
 }
 
 function actualizarStats(){
