@@ -354,7 +354,7 @@
 <div class="toast" id="toast"></div>
 
 <div class="dev-footer" id="dev-footer">
-  <span class="dev-version">DoorApp v1.8</span>
+  <span class="dev-version">DoorApp v1.9</span>
   <button class="dev-reset" onclick="resetUsadas()" title="Resetear noticias usadas">↺ reset</button>
 </div>
 
@@ -1051,7 +1051,9 @@ async function generarAudio(){
     document.getElementById('result-audio').classList.add('v');
     document.getElementById('sticky-footer').style.display='none';
     document.getElementById('scroll-area').style.paddingBottom='1rem';
-    toast(`✓ Radio ${mbRadio}MB · WhatsApp ${mbWasap}MB`);
+    const mbR=(state.audioBlob.size/1024/1024).toFixed(1);
+    const mbW=(state.wasapBlob.size/1024/1024).toFixed(1);
+    toast(`✓ Radio ${mbR}MB · WhatsApp ${mbW}MB`);
   }catch(e){
     hideProg();toast('Error: '+e.message,5000);console.error(e);
   }finally{
