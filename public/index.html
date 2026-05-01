@@ -92,6 +92,9 @@
     justify-content:center;font-size:.8rem;transition:all .15s;
   }
   .ni-fuente{font-family:var(--mono);font-size:.6rem;color:#555;letter-spacing:1px;margin-bottom:.2rem;}
+  .ni-fuente.m4{color:#e8002d;}
+  .ni-fuente.euro{color:#4a9eff;}
+  .ni-fuente.lanacion{color:#f5c400;}
   .ni-titulo{font-size:.92rem;line-height:1.4;color:var(--blanco);font-weight:400;}
   .ni-desc{font-size:.78rem;color:#666;line-height:1.4;margin-top:.3rem;}
   .ni-loading{text-align:center;font-family:var(--mono);font-size:.75rem;color:#555;padding:3rem 1rem;}
@@ -198,9 +201,9 @@
         📰 ELEGIR NOTICIAS
       </button>
       <div class="sources-strip">
-        <div class="src-tag"><span>◉</span>misionescuatro.com</div>
-        <div class="src-tag"><span>◉</span>euronews</div>
-        <div class="src-tag"><span>◉</span>la nación</div>
+        <div class="src-tag" style="border-color:#e8002d;"><span style="color:#e8002d">◉</span>misionescuatro.com</div>
+        <div class="src-tag" style="border-color:#4a9eff;"><span style="color:#4a9eff">◉</span>euronews</div>
+        <div class="src-tag" style="border-color:#f5c400;"><span style="color:#f5c400">◉</span>la nación</div>
       </div>
     </div>
   </div>
@@ -239,12 +242,12 @@
 
       <div id="eleven-config">
         <span class="config-label">Voz ElevenLabs <button class="btn btn-ghost btn-sm" style="margin-left:.4rem" onclick="cargarVoces()">↺</button></span>
-        <select class="select" id="voice-select" style="margin-bottom:.8rem;"></select>
+        <select class="select" id="voice-select" style="margin-bottom:.8rem;" onchange="resetAudio()"></select>
       </div>
 
       <div id="google-config" style="display:none">
         <span class="config-label">Voz Google (español argentino)</span>
-        <select class="select" id="google-voice" style="margin-bottom:.8rem;">
+        <select class="select" id="google-voice" style="margin-bottom:.8rem;" onchange="resetAudio()">
           <option value="es-US-Neural2-B">Neural2-B US — masculino latino (recomendada)</option>
           <option value="es-US-Neural2-C">Neural2-C US — femenina latina</option>
           <option value="es-US-Wavenet-B">WaveNet-B US — masculino latino</option>
@@ -254,7 +257,7 @@
         </select>
       </div>
       <span class="config-label">Música de fondo</span>
-      <select class="select" id="music-select">
+      <select class="select" id="music-select" onchange="resetAudio()">
         <option value="news" selected>🎵 Jingle de noticias</option>
         <option value="none">Sin música</option>
       </select>
@@ -288,9 +291,9 @@
 <script>
 // Claves en el servidor Vercel (seguro)
 const FEEDS=[
-  {name:'Misiones Cuatro', url:'https://misionescuatro.com/feed/'},
-  {name:'Euronews',        url:'https://es.euronews.com/rss?format=mrss&level=vertical&name=news'},
-  {name:'La Nación',       url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/'},
+  {name:'Misiones Cuatro', url:'https://misionescuatro.com/feed/',       cls:'m4'},
+  {name:'Euronews',        url:'https://es.euronews.com/rss?format=mrss&level=vertical&name=news', cls:'euro'},
+  {name:'La Nación',       url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/', cls:'lanacion'},
 ];
 const VOCES_DEFAULT=[
   {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Facundo'},
@@ -387,6 +390,7 @@ async function fetchRSS(feed){
       titulo:item.querySelector('title')?.textContent?.trim()||'',
       desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,400),
       fuente:feed.name,
+      cls:feed.cls||'',
     })).filter(n=>{
       const pw=n.titulo.trim().split(/\s+/).length;
       return pw>=5&&n.desc&&n.desc.trim().length>20;
@@ -417,7 +421,7 @@ function renderNoticias(){
     <div class="noticia-item ${state.seleccionadas.includes(i)?'sel':''}" onclick="toggleNoticia(${i})">
       <div class="ni-check">${state.seleccionadas.includes(i)?'✓':''}</div>
       <div style="flex:1">
-        <div class="ni-fuente">● ${n.fuente}</div>
+        <div class="ni-fuente ${n.cls}">● ${n.fuente}</div>
         <div class="ni-titulo">${n.titulo}</div>
         ${n.desc?`<div class="ni-desc">${n.desc.slice(0,120)}${n.desc.length>120?'...':''}</div>`:''}
       </div>
@@ -536,14 +540,33 @@ async function cargarVoces(){
     const voces=d.voices||[];
     if(!voces.length) return;
     sel.innerHTML='';
-    voces.forEach(v=>{
+    // Mis voces primero (las que el usuario guardó en su biblioteca)
+    const mias=voces.filter(v=>v.category==='cloned'||v.category==='professional');
+    const resto=voces.filter(v=>!mias.includes(v));
+    
+    if(mias.length){
+      const grp=document.createElement('optgroup');
+      grp.label='⭐ Mis voces';
+      mias.forEach(v=>{
+        const o=document.createElement('option');
+        o.value=v.voice_id;
+        o.textContent='⭐ '+v.name;
+        grp.appendChild(o);
+      });
+      sel.appendChild(grp);
+    }
+    
+    const grp2=document.createElement('optgroup');
+    grp2.label='Biblioteca ElevenLabs';
+    resto.slice(0,20).forEach(v=>{
       const o=document.createElement('option');
       o.value=v.voice_id;
       const acc=v.labels?.accent||v.labels?.language||'';
-      o.textContent=v.name+(acc?' — '+acc:'');
-      sel.appendChild(o);
+      o.textContent=v.name+(acc?' ('+acc+')':'');
+      grp2.appendChild(o);
     });
-    toast('✓ '+voces.length+' voces cargadas');
+    sel.appendChild(grp2);
+    toast('✓ '+voces.length+' voces · '+mias.length+' tuyas');
   }catch(e){
     console.warn('voces:',e.message);
   }
@@ -596,13 +619,22 @@ function onProviderChange(){
   document.getElementById('google-config').style.display=p==='google'?'':'none';
 }
 
+function numALetras(n){
+  n=Math.round(Math.abs(n));
+  if(n===0)return'cero';
+  const u=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'];
+  const d=['','','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+  const c=['','cien','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
+  function g(n){if(n<30)return u[n]||'';if(n<100)return d[Math.floor(n/10)]+(n%10?' y '+u[n%10]:'');if(n===100)return'cien';return c[Math.floor(n/100)]+(n%100?' '+g(n%100):'');}
+  let r='';
+  if(n>=1000000){r+=g(Math.floor(n/1000000))+(Math.floor(n/1000000)===1?' millón':' millones')+' ';n%=1000000;}
+  if(n>=1000){const m=Math.floor(n/1000);r+=(m===1?'mil':g(m)+' mil')+' ';n%=1000;}
+  if(n>0)r+=g(n);
+  return r.trim();
+}
+
 function limpiarTextoTTS(txt){
-  // Reemplazar simbolos que los TTS leen mal
-  return txt
-    .replace(/1°/g,'primero').replace(/2°/g,'segundo').replace(/3°/g,'tercero')
-    .replace(/(\d+)°/g,'$1 grados')
-    .replace(/\$/g,'pesos')
-    .replace(/USD/g,'dólares')
+  txt=txt
     .replace(/MEP/g,'dólar bolsa')
     .replace(/CCL/g,'contado con liquidación')
     .replace(/PBI/g,'producto bruto interno')
@@ -610,12 +642,19 @@ function limpiarTextoTTS(txt){
     .replace(/INDEC/g,'Indec')
     .replace(/BCRA/g,'Banco Central')
     .replace(/ANSES/g,'Anses')
-    .replace(/IVA/g,'I-V-A')
-    .replace(/(\d+),(\d+)%/g,'$1 coma $2 por ciento')
-    .replace(/(\d+)%/g,'$1 por ciento')
-    .replace(/(\d+)\.(\d{3})/g,(m,a,b)=>a+b) // 1.400 → 1400
+    .replace(/IVA/g,'iva')
+    .replace(/USD/g,'dólares')
     .replace(/&/g,'y')
-    .trim();
+    .replace(/1°/g,'primero').replace(/2°/g,'segundo').replace(/3°/g,'tercero')
+    .replace(/(\d+)°/g,(m,a)=>numALetras(parseInt(a))+' grados');
+  // Porcentajes
+  txt=txt.replace(/(\d+)[,.](\d+)\s*%/g,(m,a,b)=>numALetras(parseInt(a))+' coma '+numALetras(parseInt(b))+' por ciento');
+  txt=txt.replace(/(\d+)\s*%/g,(m,a)=>numALetras(parseInt(a))+' por ciento');
+  // Decimales: 1449,50 → mil cuatrocientos cuarenta y nueve con cincuenta
+  txt=txt.replace(/(\d[\d.]*)[,.](\d+)/g,(m,a,b)=>numALetras(parseInt(a.replace(/\./g,'')))+' con '+numALetras(parseInt(b)));
+  // Numeros grandes
+  txt=txt.replace(/(\d[\d.]{2,})/g,(m,a)=>{const n=parseInt(a.replace(/\./g,''));return isNaN(n)?m:numALetras(n);});
+  return txt.trim();
 }
 
 async function generarVoz(guion){
@@ -763,6 +802,17 @@ function audioBufferToWav(buf){
     v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;
   }
   return new Blob([ab],{type:'audio/wav'});
+}
+
+function resetAudio(){
+  // Ocultar resultado y mostrar boton generar de nuevo
+  document.getElementById('result-audio').classList.remove('v');
+  const btn=document.getElementById('footer-main');
+  btn.style.display='';
+  btn.disabled=false;
+  state.audioBlob=null;
+  state.mp3Blob=null;
+  state.renderedBuffer=null;
 }
 
 function nuevoFlash(){
