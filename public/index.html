@@ -154,7 +154,7 @@
       <div class="ra-title">✓ FLASH LISTO</div>
       <audio id="player" controls></audio>
       <div class="ra-acciones">
-        <button class="btn btn-yellow" onclick="descargar()">⬇ DESCARGAR AUDIO</button>
+        <button class="btn btn-yellow" id="btn-dl" onclick="descargar()">⬇ DESCARGAR MP3</button>
         <button class="btn btn-ghost" onclick="nuevoFlash()">↺ NUEVO FLASH</button>
       </div>
     </div>
@@ -175,7 +175,7 @@ const FEEDS=[
   {name:'La Nación',       url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/'},
 ];
 const VOCES_DEFAULT=[
-  {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Mi voz favorita'},
+  {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Facundo (español)'},
   {id:'TX3LPaxmHKxFdv7VOQHJ',name:'Liam — latino'},
   {id:'onwK4e9ZLuTAKqWW03F9',name:'Daniel — neutro'},
   {id:'pNInz6obpgDQGcFmaJgB',name:'Arnold — grave'},
@@ -376,7 +376,7 @@ async function generarAudio(){
     const rVoz=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,{
       method:'POST',
       headers:{'xi-api-key':ELEVEN_KEY,'Content-Type':'application/json','Accept':'audio/mpeg'},
-      body:JSON.stringify({text:guion,model_id:'eleven_turbo_v2_5',voice_settings:{stability:.30,similarity_boost:.75,style:.2,use_speaker_boost:true,speed:1.15}})
+      body:JSON.stringify({text:guion,model_id:'eleven_multilingual_v2',voice_settings:{stability:.30,similarity_boost:.75,style:.2,use_speaker_boost:true,speed:1.15}})
     });
     if(!rVoz.ok) throw new Error('ElevenLabs '+rVoz.status);
     const vozBlob=await rVoz.blob();
@@ -425,13 +425,45 @@ function audioBufferToWav(buf){
   return new Blob([ab],{type:'audio/wav'});
 }
 
-function descargar(){
+async function descargar(){
   if(!state.audioBlob)return;
   const fecha=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
-  const ext=state.audioBlob.type.includes('wav')?'wav':'mp3';
-  const url=URL.createObjectURL(state.audioBlob);
-  const a=document.createElement('a');a.href=url;a.download=`flash-misiones-${fecha}.${ext}`;a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),5000);toast('Descargando ✓');
+  const nombre=`flash-misiones-${fecha}.mp3`;
+
+  toast('Convirtiendo a MP3...');
+  document.getElementById('btn-dl').disabled=true;
+
+  try{
+    // Convertir blob a base64
+    const arrayBuf=await state.audioBlob.arrayBuffer();
+    const base64=btoa(String.fromCharCode(...new Uint8Array(arrayBuf)));
+
+    // Enviar al servidor para convertir a MP3
+    const r=await fetch('/api/convert',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({wav:base64})
+    });
+
+    if(!r.ok) throw new Error('Error en conversión: '+r.status);
+
+    const mp3Blob=await r.blob();
+    const url=URL.createObjectURL(mp3Blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=nombre;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    toast('✓ MP3 descargado');
+
+  }catch(e){
+    // Fallback: descargar WAV si falla la conversión
+    console.warn('Conversión MP3 falló, descargando WAV:',e);
+    const url=URL.createObjectURL(state.audioBlob);
+    const a=document.createElement('a');
+    a.href=url;a.download=nombre.replace('.mp3','.wav');a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    toast('Descargado en WAV (MP3 no disponible)');
+  }
+  document.getElementById('btn-dl').disabled=false;
 }
 
 function nuevoFlash(){
