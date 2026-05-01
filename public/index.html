@@ -2,104 +2,204 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Flash Radio — Misiones Cuatro</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
-  :root{--rojo:#e8002d;--negro:#0a0a0a;--gris:#1a1a1a;--gris2:#2a2a2a;--blanco:#f0ede8;--amarillo:#f5c400;--verde:#00c853;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--display:'Bebas Neue',sans-serif;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--negro);color:var(--blanco);font-family:var(--sans);min-height:100vh;}
-  header{background:var(--rojo);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:65px;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--amarillo);}
-  .logo{font-family:var(--display);font-size:2rem;letter-spacing:4px;color:white;}
+  :root{
+    --rojo:#e8002d;--negro:#0a0a0a;--gris:#1a1a1a;--gris2:#2a2a2a;
+    --blanco:#f0ede8;--amarillo:#f5c400;--verde:#00c853;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--display:'Bebas Neue',sans-serif;
+    --footer-h:80px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow-x:hidden;}
+  body{background:var(--negro);color:var(--blanco);font-family:var(--sans);display:flex;flex-direction:column;}
+
+  /* HEADER */
+  header{
+    background:var(--rojo);padding:0 1.2rem;
+    display:flex;align-items:center;justify-content:space-between;
+    height:56px;flex-shrink:0;border-bottom:3px solid var(--amarillo);
+    position:sticky;top:0;z-index:200;
+  }
+  .logo{font-family:var(--display);font-size:1.7rem;letter-spacing:3px;color:white;}
   .logo span{color:var(--amarillo);}
-  .reloj{font-family:var(--mono);font-size:1rem;color:rgba(255,255,255,.8);letter-spacing:2px;}
-  .steps-nav{display:flex;background:#111;border-bottom:1px solid #222;overflow-x:auto;}
-  .step-tab{font-family:var(--mono);font-size:.68rem;letter-spacing:2px;text-transform:uppercase;padding:.9rem 1.4rem;cursor:pointer;border:none;background:none;color:#444;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;}
-  .step-tab.active{color:var(--amarillo);border-bottom-color:var(--amarillo);}
-  .step-tab:disabled{cursor:not-allowed;opacity:.3;}
-  main{max-width:900px;margin:0 auto;padding:1.5rem 1.2rem 4rem;}
+  .reloj{font-family:var(--mono);font-size:.85rem;color:rgba(255,255,255,.8);letter-spacing:2px;}
+
+  /* STEPS DOTS */
+  .steps-dots{
+    display:flex;align-items:center;justify-content:center;
+    gap:.5rem;padding:.7rem 1rem;background:#111;
+    border-bottom:1px solid #1e1e1e;flex-shrink:0;
+  }
+  .dot-step{
+    width:28px;height:28px;border-radius:50%;border:2px solid #333;
+    font-family:var(--mono);font-size:.65rem;color:#444;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s;flex-shrink:0;
+  }
+  .dot-step.active{border-color:var(--amarillo);color:var(--amarillo);background:#1c1a00;}
+  .dot-step.done{border-color:var(--verde);color:var(--verde);background:#0a1a0a;}
+  .dot-line{flex:1;height:2px;background:#222;max-width:40px;}
+  .dot-line.done{background:var(--verde);}
+
+  /* SCROLL AREA */
+  .scroll-area{flex:1;overflow-y:auto;padding:1rem 1rem calc(var(--footer-h) + 1rem);}
+
+  /* PANELS */
   .panel{display:none;}
-  .panel.active{display:block;animation:fi .3s ease;}
-  @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-  .home-hero{text-align:center;padding:3rem 1rem 2rem;}
-  .home-hero h1{font-family:var(--display);font-size:3.5rem;letter-spacing:6px;color:var(--amarillo);margin-bottom:.5rem;}
-  .home-hero p{font-family:var(--mono);font-size:.8rem;color:#555;letter-spacing:2px;margin-bottom:2.5rem;}
-  .btn-main{font-family:var(--display);font-size:1.5rem;letter-spacing:4px;background:var(--rojo);color:white;border:none;border-radius:6px;padding:1.2rem 3rem;cursor:pointer;transition:all .2s;display:inline-block;}
-  .btn-main:hover{background:#c0001f;transform:translateY(-2px);}
-  .sources-strip{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:2rem;}
-  .src-tag{font-family:var(--mono);font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;padding:.3rem .8rem;border:1px solid #2a2a2a;border-radius:2px;color:#444;}
-  .src-tag span{color:var(--verde);margin-right:4px;}
-  .panel-title{font-family:var(--display);font-size:1.6rem;letter-spacing:3px;color:var(--amarillo);margin-bottom:.3rem;}
-  .panel-sub{font-family:var(--mono);font-size:.7rem;color:#555;letter-spacing:1px;margin-bottom:1.2rem;}
-  .noticias-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-wrap:wrap;gap:.5rem;}
-  .counter{font-family:var(--mono);font-size:.72rem;color:#666;letter-spacing:1px;}
-  .counter span{color:var(--amarillo);}
-  .noticias-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;max-height:460px;overflow-y:auto;padding-right:.3rem;}
-  .noticias-list::-webkit-scrollbar{width:4px;}
-  .noticias-list::-webkit-scrollbar-thumb{background:#333;border-radius:2px;}
-  .noticia-item{background:var(--gris);border:1px solid #2a2a2a;border-radius:4px;padding:.8rem 1rem;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:.8rem;}
-  .noticia-item:hover{border-color:#444;}
+  .panel.active{display:block;animation:fi .25s ease;}
+  @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+  /* HOME */
+  .home-hero{text-align:center;padding:2rem 1rem;}
+  .home-hero h1{font-family:var(--display);font-size:3rem;letter-spacing:5px;color:var(--amarillo);margin-bottom:.4rem;}
+  .home-hero p{font-family:var(--mono);font-size:.7rem;color:#555;letter-spacing:2px;margin-bottom:2rem;}
+  .btn-enorme{
+    display:block;width:100%;font-family:var(--display);font-size:1.6rem;
+    letter-spacing:4px;background:var(--rojo);color:white;border:none;
+    border-radius:8px;padding:1.4rem;cursor:pointer;
+    box-shadow:0 4px 20px rgba(232,0,45,.3);
+  }
+  .sources-strip{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-top:1.5rem;}
+  .src-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:1px;text-transform:uppercase;padding:.25rem .6rem;border:1px solid #2a2a2a;border-radius:2px;color:#444;}
+  .src-tag span{color:var(--verde);margin-right:3px;}
+
+  /* PANEL TITLES */
+  .panel-title{font-family:var(--display);font-size:1.4rem;letter-spacing:3px;color:var(--amarillo);margin-bottom:.2rem;}
+  .panel-sub{font-family:var(--mono);font-size:.65rem;color:#555;letter-spacing:1px;margin-bottom:1rem;}
+
+  /* NOTICIAS */
+  .noticias-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;}
+  .counter{font-family:var(--mono);font-size:.7rem;color:#666;}
+  .counter span{color:var(--amarillo);font-size:.9rem;font-weight:bold;}
+  .counter-bar{height:4px;background:#1e1e1e;border-radius:2px;margin-bottom:.8rem;overflow:hidden;}
+  .counter-fill{height:100%;background:var(--amarillo);transition:width .3s;border-radius:2px;}
+
+  .noticia-item{
+    background:var(--gris);border:2px solid #2a2a2a;border-radius:8px;
+    padding:.9rem 1rem;cursor:pointer;transition:all .15s;
+    display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.5rem;
+    active-scale:.97;
+  }
+  .noticia-item:active{transform:scale(.98);}
   .noticia-item.sel{border-color:var(--amarillo);background:#1a1800;}
   .noticia-item.sel .ni-check{background:var(--amarillo);border-color:var(--amarillo);color:#000;}
-  .ni-check{width:18px;height:18px;border:2px solid #333;border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .15s;}
-  .ni-fuente{font-family:var(--mono);font-size:.62rem;color:#555;letter-spacing:1px;margin-bottom:.2rem;}
-  .ni-titulo{font-size:.88rem;line-height:1.45;color:var(--blanco);}
+  .ni-check{
+    width:24px;height:24px;border:2px solid #333;border-radius:6px;
+    flex-shrink:0;margin-top:1px;display:flex;align-items:center;
+    justify-content:center;font-size:.8rem;transition:all .15s;
+  }
+  .ni-fuente{font-family:var(--mono);font-size:.6rem;color:#555;letter-spacing:1px;margin-bottom:.2rem;}
+  .ni-titulo{font-size:.92rem;line-height:1.4;color:var(--blanco);font-weight:400;}
   .ni-desc{font-size:.78rem;color:#666;line-height:1.4;margin-top:.3rem;}
-  .ni-loading{text-align:center;font-family:var(--mono);font-size:.75rem;color:#555;padding:2rem;}
-  .guion-area{width:100%;background:#111;border:1px solid #333;border-radius:4px;padding:1rem;color:var(--blanco);font-family:var(--sans);font-size:.95rem;line-height:1.9;resize:vertical;min-height:260px;}
+  .ni-loading{text-align:center;font-family:var(--mono);font-size:.75rem;color:#555;padding:3rem 1rem;}
+
+  /* GUION */
+  .guion-area{
+    width:100%;background:#111;border:1px solid #333;border-radius:8px;
+    padding:1rem;color:var(--blanco);font-family:var(--sans);
+    font-size:.92rem;line-height:1.85;resize:none;min-height:200px;
+    height:calc(100vh - 280px);
+  }
   .guion-area:focus{outline:none;border-color:var(--amarillo);}
-  .guion-stats{font-family:var(--mono);font-size:.68rem;color:#555;letter-spacing:1px;margin-top:.4rem;margin-bottom:1rem;}
-  .audio-config{background:var(--gris);border:1px solid #2a2a2a;border-radius:4px;padding:1.2rem;margin-bottom:1.2rem;}
-  .audio-config label{font-family:var(--mono);font-size:.7rem;color:#888;letter-spacing:1px;display:block;margin-bottom:.4rem;}
-  .select{background:#111;border:1px solid #333;border-radius:3px;padding:.5rem .8rem;color:var(--blanco);font-family:var(--mono);font-size:.75rem;width:100%;}
-  .select:focus{outline:none;border-color:var(--amarillo);}
+  .guion-stats{font-family:var(--mono);font-size:.65rem;color:#555;margin-top:.5rem;}
+
+  /* AUDIO CONFIG */
+  .audio-config{background:var(--gris);border:1px solid #2a2a2a;border-radius:8px;padding:1rem;margin-bottom:1rem;}
+  .config-label{font-family:var(--mono);font-size:.65rem;color:#888;letter-spacing:1px;display:block;margin-bottom:.4rem;text-transform:uppercase;}
+  .select{
+    background:#111;border:1px solid #333;border-radius:6px;
+    padding:.7rem .8rem;color:var(--blanco);font-family:var(--mono);
+    font-size:.8rem;width:100%;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%23666'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right .8rem center;
+    padding-right:2rem;
+  }
+
+  /* PROGRESS */
   .progress-wrap{display:none;margin-bottom:1rem;}
   .progress-wrap.v{display:block;}
-  .pbar{height:4px;background:#1e1e1e;border-radius:2px;overflow:hidden;margin-bottom:.4rem;}
+  .pbar{height:6px;background:#1e1e1e;border-radius:3px;overflow:hidden;margin-bottom:.5rem;}
   .pfill{height:100%;background:var(--rojo);width:0%;transition:width .5s ease;}
-  .plabel{font-family:var(--mono);font-size:.7rem;color:#555;letter-spacing:1px;}
-  .result-audio{background:var(--gris);border:1px solid var(--verde);border-radius:4px;padding:1.2rem;display:none;}
+  .plabel{font-family:var(--mono);font-size:.7rem;color:#555;text-align:center;}
+
+  /* RESULTADO */
+  .result-audio{background:var(--gris);border:2px solid var(--verde);border-radius:8px;padding:1rem;display:none;margin-bottom:1rem;}
   .result-audio.v{display:block;animation:fi .3s ease;}
-  .ra-title{font-family:var(--display);font-size:1.2rem;letter-spacing:3px;color:var(--verde);margin-bottom:1rem;}
-  audio{width:100%;margin-bottom:1rem;}
-  .ra-acciones{display:flex;gap:.7rem;flex-wrap:wrap;}
-  .btn{font-family:var(--mono);font-size:.72rem;letter-spacing:1.5px;padding:.6rem 1.2rem;border:none;border-radius:3px;cursor:pointer;text-transform:uppercase;transition:all .15s;display:inline-flex;align-items:center;gap:.5rem;}
+  .ra-title{font-family:var(--display);font-size:1.1rem;letter-spacing:3px;color:var(--verde);margin-bottom:.8rem;}
+  audio{width:100%;margin-bottom:.8rem;}
+
+  /* STICKY FOOTER */
+  .sticky-footer{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--negro);border-top:1px solid #1e1e1e;
+    padding:.8rem 1rem;display:flex;gap:.6rem;
+    z-index:100;height:var(--footer-h);align-items:center;
+  }
+  .sticky-footer .btn{flex:1;}
+
+  /* BUTTONS */
+  .btn{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:1px;
+    padding:.75rem 1rem;border:none;border-radius:8px;cursor:pointer;
+    text-transform:uppercase;transition:all .15s;
+    display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+    font-weight:600;min-height:48px;
+  }
   .btn:disabled{opacity:.3;cursor:not-allowed;}
+  .btn:active:not(:disabled){transform:scale(.96);}
   .btn-primary{background:var(--rojo);color:white;}
-  .btn-primary:hover:not(:disabled){background:#c0001f;}
-  .btn-yellow{background:var(--amarillo);color:#000;font-weight:700;font-size:.8rem;padding:.7rem 1.5rem;}
-  .btn-yellow:hover:not(:disabled){background:#d4a800;}
   .btn-ghost{background:var(--gris2);color:#888;border:1px solid #333;}
-  .btn-ghost:hover:not(:disabled){color:var(--amarillo);border-color:var(--amarillo);}
+  .btn-yellow{background:var(--amarillo);color:#000;}
   .btn-green{background:#0a2a0a;color:var(--verde);border:1px solid var(--verde);}
-  .btn-green:hover:not(:disabled){background:var(--verde);color:#000;}
-  .nav-btns{display:flex;gap:.7rem;margin-top:1.5rem;justify-content:flex-end;}
-  .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;border:1px solid var(--amarillo);color:var(--amarillo);font-family:var(--mono);font-size:.75rem;padding:.6rem 1.4rem;border-radius:3px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
+  .btn-green-solid{background:var(--verde);color:#000;}
+  .btn-sm{padding:.4rem .7rem;min-height:34px;font-size:.62rem;border-radius:5px;}
+
+  /* TOAST */
+  .toast{
+    position:fixed;bottom:calc(var(--footer-h) + .5rem);left:50%;
+    transform:translateX(-50%) translateY(10px);
+    background:#1a1a1a;border:1px solid var(--amarillo);color:var(--amarillo);
+    font-family:var(--mono);font-size:.75rem;padding:.5rem 1.2rem;
+    border-radius:20px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;
+    white-space:nowrap;
+  }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
+
 <header>
   <div class="logo">FLASH<span>●</span>RADIO</div>
   <div class="reloj" id="reloj">--:--:--</div>
 </header>
-<div class="steps-nav">
-  <button class="step-tab active" id="tab-0" onclick="irA(0)">INICIO</button>
-  <button class="step-tab" id="tab-1" disabled>NOTICIAS</button>
-  <button class="step-tab" id="tab-2" disabled>GUIÓN</button>
-  <button class="step-tab" id="tab-3" disabled>AUDIO</button>
+
+<!-- STEPS DOTS -->
+<div class="steps-dots">
+  <div class="dot-step active" id="dot-0">1</div>
+  <div class="dot-line" id="line-01"></div>
+  <div class="dot-step" id="dot-1">2</div>
+  <div class="dot-line" id="line-12"></div>
+  <div class="dot-step" id="dot-2">3</div>
+  <div class="dot-line" id="line-23"></div>
+  <div class="dot-step" id="dot-3">4</div>
 </div>
-<main>
+
+<div class="scroll-area" id="scroll-area">
 
   <!-- INICIO -->
   <div class="panel active" id="panel-0">
     <div class="home-hero">
       <h1>FLASH●RADIO</h1>
-      <p>MISIONES CUATRO · GENERADOR DE FLASH INFORMATIVO</p>
-      <button class="btn-main" onclick="cargarNoticias()">ELEGIR NOTICIAS</button>
+      <p>MISIONES CUATRO · FLASH INFORMATIVO</p>
+      <button class="btn-enorme" onclick="cargarNoticias()">
+        📰 ELEGIR NOTICIAS
+      </button>
       <div class="sources-strip">
         <div class="src-tag"><span>◉</span>misionescuatro.com</div>
-        <div class="src-tag"><span>◉</span>euronews español</div>
+        <div class="src-tag"><span>◉</span>euronews</div>
         <div class="src-tag"><span>◉</span>la nación</div>
       </div>
     </div>
@@ -108,62 +208,61 @@
   <!-- NOTICIAS -->
   <div class="panel" id="panel-1">
     <div class="panel-title">ELEGÍ LAS NOTICIAS</div>
-    <div class="panel-sub">Seleccioná entre 5 y 8 para el flash</div>
+    <div class="panel-sub">Seleccioná entre 5 y 8</div>
     <div class="noticias-header">
-      <div class="counter">Seleccionadas: <span id="sel-count">0</span> / 8</div>
-      <button class="btn btn-ghost" onclick="cargarNoticias()">↺ Recargar</button>
+      <div class="counter">Seleccionadas: <span id="sel-count">0</span>/8</div>
+      <button class="btn btn-ghost btn-sm" onclick="cargarNoticias()">↺ Recargar</button>
     </div>
-    <div class="noticias-list" id="noticias-list"><div class="ni-loading">Cargando noticias...</div></div>
-    <div class="nav-btns">
-      <button class="btn btn-ghost" onclick="irA(0)">← Volver</button>
-      <button class="btn btn-primary" id="btn-guion" onclick="armarGuion()" disabled>Armar guión →</button>
-    </div>
+    <div class="counter-bar"><div class="counter-fill" id="counter-fill" style="width:0%"></div></div>
+    <div id="noticias-list"><div class="ni-loading">Cargando noticias...</div></div>
   </div>
 
-  <!-- GUIÓN -->
+  <!-- GUION -->
   <div class="panel" id="panel-2">
-    <div class="panel-title">GUIÓN DEL FLASH</div>
-    <div class="panel-sub">Editá si querés, después generá el audio</div>
+    <div class="panel-title">GUIÓN</div>
+    <div class="panel-sub">Editá si querés</div>
     <textarea class="guion-area" id="guion-area" oninput="actualizarStats()"></textarea>
     <div class="guion-stats" id="guion-stats">0 palabras</div>
-    <div class="nav-btns">
-      <button class="btn btn-ghost" onclick="irA(1)">← Volver</button>
-      <button class="btn btn-primary" onclick="irA(3);cargarVoces()">Generar audio →</button>
-    </div>
   </div>
 
   <!-- AUDIO -->
   <div class="panel" id="panel-3">
     <div class="panel-title">GENERAR AUDIO</div>
-    <div class="panel-sub">Voz latina con ElevenLabs + música de fondo</div>
+    <div class="panel-sub">Voz + música de fondo</div>
+
     <div class="audio-config">
-      <label>VOZ <button class="btn btn-ghost" style="padding:.2rem .6rem;font-size:.62rem;margin-left:.5rem;" onclick="cargarVoces()">↺ Recargar</button></label>
-      <select class="select" id="voice-select" style="margin-bottom:1rem;"></select>
-      <label>MÚSICA DE FONDO</label>
+      <span class="config-label">Voz <button class="btn btn-ghost btn-sm" style="margin-left:.4rem" onclick="cargarVoces()">↺</button></span>
+      <select class="select" id="voice-select" style="margin-bottom:.8rem;"></select>
+      <span class="config-label">Música de fondo</span>
       <select class="select" id="music-select">
         <option value="news" selected>🎵 Jingle de noticias</option>
         <option value="none">Sin música</option>
       </select>
     </div>
+
     <div class="progress-wrap" id="pwrap">
       <div class="pbar"><div class="pfill" id="pfill"></div></div>
       <div class="plabel" id="plabel">Iniciando...</div>
     </div>
+
     <div class="result-audio" id="result-audio">
       <div class="ra-title">✓ FLASH LISTO</div>
       <audio id="player" controls></audio>
-      <div class="ra-acciones">
-        <button class="btn btn-yellow" id="btn-dl" onclick="descargar()">⬇ DESCARGAR MP3</button>
-        <button class="btn btn-ghost" onclick="nuevoFlash()">↺ NUEVO FLASH</button>
+      <div style="display:flex;gap:.6rem;flex-direction:column;">
+        <button class="btn btn-yellow" id="btn-dl-radio" onclick="descargarRadio()" style="width:100%">📻 DESCARGAR PARA RADIO (WAV)</button>
+        <button class="btn btn-green-solid" id="btn-dl-wasap" onclick="descargarWasap()" style="width:100%">💬 DESCARGAR PARA WASAP</button>
       </div>
-    </div>
-    <div class="nav-btns" id="audio-nav">
-      <button class="btn btn-ghost" onclick="irA(2)">← Volver</button>
-      <button class="btn btn-green" id="btn-generar" onclick="generarAudio()">▶ GENERAR AUDIO</button>
     </div>
   </div>
 
-</main>
+</div><!-- /scroll-area -->
+
+<!-- STICKY FOOTER - cambia segun el paso -->
+<div class="sticky-footer" id="sticky-footer">
+  <button class="btn btn-ghost" id="footer-back" onclick="pasoAtras()" style="display:none">← VOLVER</button>
+  <button class="btn btn-primary" id="footer-main" onclick="accionPrincipal()">ELEGIR NOTICIAS →</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -174,26 +273,92 @@ const FEEDS=[
   {name:'La Nación',       url:'https://www.lanacion.com.ar/arc/outboundfeeds/rss/'},
 ];
 const VOCES_DEFAULT=[
-  {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Facundo (español)'},
+  {id:'qnvusyIjzlSoWYJ0C2Nm',name:'⭐ Facundo'},
   {id:'TX3LPaxmHKxFdv7VOQHJ',name:'Liam — latino'},
   {id:'onwK4e9ZLuTAKqWW03F9',name:'Daniel — neutro'},
   {id:'pNInz6obpgDQGcFmaJgB',name:'Arnold — grave'},
-  {id:'AZnzlk1XvdvUeBnXmlld',name:'Adam'},
-  {id:'ErXwobaYiN019PkySvjV',name:'Antoni'},
-  {id:'N2lVS1w4EtoT3dr4eOWO',name:'Callum'},
 ];
-const state={noticias:[],seleccionadas:[],guion:'',audioBlob:null};
+const state={paso:0,noticias:[],seleccionadas:[],guion:'',audioBlob:null,renderedBuffer:null};
 
+// RELOJ
 function tick(){const n=new Date();document.getElementById('reloj').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');}
 setInterval(tick,1000);tick();
 
-function irA(n){
-  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));
-  document.querySelectorAll('.step-tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+function toast(msg,dur=3000){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);
 }
-function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
+// NAVEGACION
+function irA(n){
+  state.paso=n;
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.getElementById('scroll-area').scrollTop=0;
+
+  // Dots
+  [0,1,2,3].forEach(i=>{
+    const d=document.getElementById('dot-'+i);
+    d.classList.toggle('active',i===n);
+    d.classList.toggle('done',i<n);
+  });
+  ['01','12','23'].forEach((pair,i)=>{
+    document.getElementById('line-'+pair).classList.toggle('done',i<n);
+  });
+
+  // Footer
+  const back=document.getElementById('footer-back');
+  const main=document.getElementById('footer-main');
+  back.style.display=n>0?'':'none';
+
+  const labels={
+    0:'📰 ELEGIR NOTICIAS →',
+    1:'✓ ARMAR GUIÓN →',
+    2:'🎙 GENERAR AUDIO →',
+    3:'▶ GENERAR AUDIO',
+  };
+  main.textContent=labels[n]||'';
+
+  if(n===1){
+    main.disabled=state.seleccionadas.length<5;
+    main.className='btn btn-primary';
+  } else if(n===2){
+    main.disabled=false;
+    main.className='btn btn-primary';
+  } else if(n===3){
+    main.disabled=false;
+    main.className='btn btn-green-solid';
+  } else {
+    main.disabled=false;
+    main.className='btn btn-primary';
+  }
+
+  // Ocultar footer-main en paso 3 si ya generó audio
+  if(n===3&&document.getElementById('result-audio').classList.contains('v')){
+    main.style.display='none';
+  } else {
+    main.style.display='';
+  }
+}
+
+function pasoAtras(){
+  if(state.paso===3){
+    irA(2);
+  } else if(state.paso===2){
+    irA(1);
+  } else if(state.paso===1){
+    irA(0);
+  }
+}
+
+function accionPrincipal(){
+  if(state.paso===0) cargarNoticias();
+  else if(state.paso===1) armarGuion();
+  else if(state.paso===2){irA(3);cargarVoces();}
+  else if(state.paso===3) generarAudio();
+}
+
+// RSS
 async function fetchRSS(feed){
   try{
     const r=await fetch('/api/rss?url='+encodeURIComponent(feed.url));
@@ -205,36 +370,38 @@ async function fetchRSS(feed){
       desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,400),
       fuente:feed.name,
     })).filter(n=>{
-      // Filtrar: titulo debe tener al menos 6 palabras Y desc al menos 20 chars
-      const palabrasTitulo=n.titulo.trim().split(/\s+/).length;
-      const tieneDesc=n.desc&&n.desc.trim().length>20;
-      return palabrasTitulo>=5&&tieneDesc;
+      const pw=n.titulo.trim().split(/\s+/).length;
+      return pw>=5&&n.desc&&n.desc.trim().length>20;
     });
   }catch(e){console.warn('RSS',feed.name,e.message);return[];}
 }
 
 async function cargarNoticias(){
   irA(1);
-  document.getElementById('tab-1').disabled=false;
   document.getElementById('noticias-list').innerHTML='<div class="ni-loading">Cargando noticias...</div>';
-  state.noticias=[];state.seleccionadas=[];
+  state.noticias=[];state.seleccionadas=[];actualizarCounter();
   const res=await Promise.all(FEEDS.map(fetchRSS));
   state.noticias=res.flat();
   const vistas=new Set();
-  state.noticias=state.noticias.filter(n=>{const k=n.titulo.slice(0,50).toLowerCase();if(vistas.has(k))return false;vistas.add(k);return true;});
+  state.noticias=state.noticias.filter(n=>{
+    const k=n.titulo.slice(0,50).toLowerCase();
+    if(vistas.has(k))return false;vistas.add(k);return true;
+  });
   renderNoticias();
 }
 
 function renderNoticias(){
   const el=document.getElementById('noticias-list');
-  if(!state.noticias.length){el.innerHTML='<div class="ni-loading">No se encontraron noticias. Intentá recargar.</div>';return;}
+  if(!state.noticias.length){
+    el.innerHTML='<div class="ni-loading">No se encontraron noticias. Intentá recargar.</div>';return;
+  }
   el.innerHTML=state.noticias.map((n,i)=>`
     <div class="noticia-item ${state.seleccionadas.includes(i)?'sel':''}" onclick="toggleNoticia(${i})">
       <div class="ni-check">${state.seleccionadas.includes(i)?'✓':''}</div>
       <div style="flex:1">
         <div class="ni-fuente">● ${n.fuente}</div>
         <div class="ni-titulo">${n.titulo}</div>
-        ${n.desc?`<div class="ni-desc">${n.desc}</div>`:''}
+        ${n.desc?`<div class="ni-desc">${n.desc.slice(0,120)}${n.desc.length>120?'...':''}</div>`:''}
       </div>
     </div>`).join('');
   actualizarCounter();
@@ -243,38 +410,36 @@ function renderNoticias(){
 function toggleNoticia(i){
   const idx=state.seleccionadas.indexOf(i);
   if(idx>-1)state.seleccionadas.splice(idx,1);
-  else{if(state.seleccionadas.length>=8){toast('Máximo 8 noticias');return;}state.seleccionadas.push(i);}
+  else{
+    if(state.seleccionadas.length>=8){toast('Máximo 8 noticias');return;}
+    state.seleccionadas.push(i);
+  }
   renderNoticias();
 }
 
 function actualizarCounter(){
   const n=state.seleccionadas.length;
   document.getElementById('sel-count').textContent=n;
-  document.getElementById('btn-guion').disabled=n<5;
-  if(n>=5){document.getElementById('tab-2').disabled=false;document.getElementById('tab-3').disabled=false;}
+  document.getElementById('counter-fill').style.width=(n/8*100)+'%';
+  const btn=document.getElementById('footer-main');
+  if(state.paso===1) btn.disabled=n<5;
 }
 
+// GUION
 async function armarGuion(){
   const noticias=state.seleccionadas.map(i=>state.noticias[i]);
-
-  // Clima + Dólar en paralelo
-  let climaInicio='', climaFinal='', dolarTexto='';
+  let climaInicio='',climaFinal='',dolarTexto='';
 
   await Promise.all([
-    // Clima Posadas (Open-Meteo, gratis)
     fetch('https://api.open-meteo.com/v1/forecast?latitude=-27.3671&longitude=-55.8961&daily=temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&forecast_days=1')
-      .then(r=>r.json())
-      .then(d=>{
+      .then(r=>r.json()).then(d=>{
         const tmax=Math.round(d.daily.temperature_2m_max[0]);
         const tmin=Math.round(d.daily.temperature_2m_min[0]);
         climaInicio=`Para hoy en Misiones se espera una mínima de ${tmin} grados y una máxima de ${tmax} grados.`;
         climaFinal=`Recordamos que para hoy se esperan temperaturas de entre ${tmin} y ${tmax} grados en Misiones.`;
-      }).catch(e=>console.warn('Clima no disponible',e)),
-
-    // Dólar (API pública DolarApi)
+      }).catch(()=>{}),
     fetch('https://dolarapi.com/v1/dolares')
-      .then(r=>r.json())
-      .then(d=>{
+      .then(r=>r.json()).then(d=>{
         const oficial=d.find(x=>x.casa==='oficial');
         const blue=d.find(x=>x.casa==='blue');
         const mep=d.find(x=>x.casa==='bolsa');
@@ -285,66 +450,52 @@ async function armarGuion(){
         if(mep) partes.push(`el MEP a ${Math.round(mep.venta)}`);
         if(ccl) partes.push(`el contado con liqui a ${Math.round(ccl.venta)}`);
         if(partes.length) dolarTexto=`En materia cambiaria, ${partes.join(', ')}.`;
-      }).catch(e=>console.warn('Dólar no disponible',e)),
+      }).catch(()=>{}),
   ]);
 
-  // Armar bloques - cortar SOLO por oraciones completas
-  function cortarPorOraciones(texto, maxPalabras){
-    // Dividir en oraciones
-    const oraciones=texto.match(/[^.!?]+[.!?]+/g)||[texto];
-    let resultado='';
-    let palabras=0;
-    for(const o of oraciones){
-      const pw=o.trim().split(/\s+/).length;
-      if(palabras+pw>maxPalabras) break; // nunca cortar a mitad
-      resultado+=o;
-      palabras+=pw;
+  function cortarOraciones(txt,max){
+    const ors=txt.match(/[^.!?]+[.!?]+/g)||[txt];
+    let res='',pw=0;
+    for(const o of ors){
+      const p=o.trim().split(/\s+/).length;
+      if(pw+p>max) break;
+      res+=o;pw+=p;
     }
-    return resultado.trim();
+    return res.trim();
   }
 
   const bloques=noticias.map(n=>{
-    let t=n.titulo.trim();
-    if(!t.match(/[.?!]$/))t+='.';
-    let bajada=n.desc.trim();
-    if(!bajada.match(/[.?!]$/))bajada+='.';
-    return t+'\n'+bajada;
+    let t=n.titulo.trim();if(!t.match(/[.?!]$/))t+='.';
+    let b=n.desc.trim();if(!b.match(/[.?!]$/))b+='.';
+    return t+'\n'+b;
   });
 
-  // Meta: ~280 palabras totales
-  const META_PALABRAS=280;
+  const META=280;
   const intro='Noticias de Misiones Cuatro en dos minutos.';
   const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
-  const fijas=[intro, climaInicio, dolarTexto, climaFinal, cierre].join(' ');
-  const palabrasFijas=fijas.split(/\s+/).filter(Boolean).length;
-  let palabrasRestantes=META_PALABRAS-palabrasFijas;
+  const fijas=[intro,climaInicio,dolarTexto,climaFinal,dolarTexto,cierre].join(' ');
+  let restantes=META-fijas.split(/\s+/).filter(Boolean).length;
 
   let cuerpo='';
   for(const bloque of bloques){
-    if(palabrasRestantes<=0) break;
+    if(restantes<=0)break;
     const pw=bloque.split(/\s+/).filter(Boolean).length;
-    if(pw<=palabrasRestantes){
-      cuerpo+=(cuerpo?'\n\n':'')+bloque;
-      palabrasRestantes-=pw;
-    } else {
-      // Cortar solo por oraciones completas
-      const recortado=cortarPorOraciones(bloque, palabrasRestantes);
-      if(recortado) cuerpo+=(cuerpo?'\n\n':'')+recortado;
-      break;
-    }
+    if(pw<=restantes){cuerpo+=(cuerpo?'\n\n':'')+bloque;restantes-=pw;}
+    else{const r=cortarOraciones(bloque,restantes);if(r)cuerpo+=(cuerpo?'\n\n':'')+r;break;}
   }
 
   const partes=[intro];
-  if(climaInicio) partes.push(climaInicio);
-  if(dolarTexto) partes.push(dolarTexto);
+  if(climaInicio)partes.push(climaInicio);
+  if(dolarTexto)partes.push(dolarTexto);
   partes.push(cuerpo);
-  if(climaFinal) partes.push(climaFinal);
-  if(dolarTexto) partes.push(dolarTexto); // dolar tambien al final
+  if(climaFinal)partes.push(climaFinal);
+  if(dolarTexto)partes.push(dolarTexto);
   partes.push(cierre);
 
   state.guion=partes.join('\n\n');
   document.getElementById('guion-area').value=state.guion;
-  actualizarStats();irA(2);
+  actualizarStats();
+  irA(2);
 }
 
 function actualizarStats(){
@@ -355,106 +506,74 @@ function actualizarStats(){
   document.getElementById('guion-stats').textContent=`${p} palabras · ~${Math.floor(s/60)>0?Math.floor(s/60)+'m ':''}${s%60}s al aire`;
 }
 
+// VOCES
 async function cargarVoces(){
   const sel=document.getElementById('voice-select');
   sel.innerHTML=VOCES_DEFAULT.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
   try{
     const r=await fetch('https://api.elevenlabs.io/v1/voices',{headers:{'xi-api-key':ELEVEN_KEY}});
-    if(!r.ok) throw new Error('status '+r.status);
     const d=await r.json();
     const voces=d.voices||[];
     if(voces.length){
       sel.innerHTML='';
       const orden=[
-        ...voces.filter(v=>v.name.toLowerCase().includes('leonardo')),
-        ...voces.filter(v=>(v.labels?.accent||'').toLowerCase().includes('argentin')),
-        ...voces.filter(v=>(v.labels?.language||'').toLowerCase().includes('spanish')),
-        ...voces,
+        ...voces.filter(v=>v.voice_id==='qnvusyIjzlSoWYJ0C2Nm'),
+        ...voces.filter(v=>v.voice_id!=='qnvusyIjzlSoWYJ0C2Nm'&&(v.labels?.language||'').toLowerCase().includes('spanish')),
+        ...voces.filter(v=>!(v.labels?.language||'').toLowerCase().includes('spanish')),
       ];
       const vistos=new Set();
       orden.filter(v=>{if(vistos.has(v.voice_id))return false;vistos.add(v.voice_id);return true;})
-        .slice(0,30).forEach(v=>{
-          const o=document.createElement('option');o.value=v.voice_id;
-          const acc=v.labels?.accent||v.labels?.language||'';
-          o.textContent=v.name+(acc?' ('+acc+')':'');sel.appendChild(o);
+        .slice(0,20).forEach(v=>{
+          const o=document.createElement('option');
+          o.value=v.voice_id;
+          const isFacundo=v.voice_id==='qnvusyIjzlSoWYJ0C2Nm';
+          o.textContent=(isFacundo?'⭐ ':'')+v.name;
+          if(isFacundo)o.selected=true;
+          sel.appendChild(o);
         });
-      toast('✓ '+voces.length+' voces cargadas');
     }
-  }catch(e){toast('Voces por defecto cargadas',2000);}
+  }catch(e){}
 }
 
-async function generarMusicaElevenLabs(){
-  // Genera jingle de noticias con ElevenLabs Sound Effects
-  const r=await fetch('https://api.elevenlabs.io/v1/sound-generation',{
-    method:'POST',
-    headers:{'xi-api-key':ELEVEN_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({
-      text:'Upbeat news broadcast intro jingle, professional radio, energetic, trumpet fanfare, 30 seconds',
-      duration_seconds:30,
-      prompt_influence:0.5
-    })
-  });
-  if(!r.ok) throw new Error('ElevenLabs música: '+r.status);
-  return await r.arrayBuffer();
-}
-
-function generarMusicaNews(ctx, dur, inicioVoz=1.5, finDolar=6) {
-  // Master con envelope dinamico:
-  // 0 → inicioVoz: fuerte (jingle intro)
-  // inicioVoz → finDolar: medio (mientras dice dolar)
-  // finDolar → dur-3: muy bajo (fondo durante noticias)
-  // dur-3 → dur: sube al cierre
-  const master = ctx.createGain();
-  const ct = ctx.currentTime;
-  master.gain.setValueAtTime(0, ct);
-  master.gain.linearRampToValueAtTime(0.18, ct + 0.3);           // sube rapido al inicio
-  master.gain.setValueAtTime(0.18, ct + inicioVoz);               // fuerte hasta que habla
-  master.gain.linearRampToValueAtTime(0.06, ct + inicioVoz + 1);  // baja cuando empieza voz
-  master.gain.setValueAtTime(0.06, ct + finDolar);                 // medio mientras dolar
-  master.gain.linearRampToValueAtTime(0.015, ct + finDolar + 1.5);// muy baja en noticias
-  master.gain.setValueAtTime(0.015, ct + dur - 4);                 // sigue baja
-  master.gain.linearRampToValueAtTime(0.10, ct + dur - 2);         // sube al cierre
-  master.gain.linearRampToValueAtTime(0, ct + dur);                // fade out final
+// MUSICA
+function generarMusicaNews(ctx,dur,inicioVoz=1.5,finDolar=16){
+  const master=ctx.createGain();
+  const ct=ctx.currentTime;
+  master.gain.setValueAtTime(0,ct);
+  master.gain.linearRampToValueAtTime(0.18,ct+0.3);
+  master.gain.setValueAtTime(0.18,ct+inicioVoz);
+  master.gain.linearRampToValueAtTime(0.06,ct+inicioVoz+1);
+  master.gain.setValueAtTime(0.06,ct+finDolar);
+  master.gain.linearRampToValueAtTime(0.015,ct+finDolar+1.5);
+  master.gain.setValueAtTime(0.015,ct+dur-4);
+  master.gain.linearRampToValueAtTime(0.10,ct+dur-2);
+  master.gain.linearRampToValueAtTime(0,ct+dur);
   master.connect(ctx.destination);
 
-  // Jingle: secuencia de notas tipo noticiero
   const seq=[[1046,0,.10],[1318,.13,.10],[1568,.27,.16],[1318,.47,.10],
              [1046,.61,.10],[1568,.75,.22],[1318,1.02,.10],[1046,1.16,.10],
              [1175,1.30,.16],[1046,1.50,.10],[1568,1.65,.30]];
-
   function tocar(off){
     seq.forEach(([f,t,d])=>{
       const o=ctx.createOscillator(),g=ctx.createGain();
       o.type='sine';o.frequency.value=f;
       const st=ct+off+t;
-      g.gain.setValueAtTime(0,st);
-      g.gain.linearRampToValueAtTime(.8,st+.015);
-      g.gain.linearRampToValueAtTime(0,st+d);
-      o.connect(g);g.connect(master);
-      o.start(st);o.stop(st+d+.05);
+      g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.8,st+.015);g.gain.linearRampToValueAtTime(0,st+d);
+      o.connect(g);g.connect(master);o.start(st);o.stop(st+d+.05);
     });
   }
-
-  // Jingle al inicio y al cierre
-  tocar(0);
-  tocar(dur - 2.5);
-
-  // Pad suave de fondo continuo
+  tocar(0);tocar(dur-2.5);
   const pad=ctx.createOscillator(),pg=ctx.createGain();
-  pad.type='triangle';pad.frequency.value=196;
-  pg.gain.value=0.4;
-  pad.connect(pg);pg.connect(master);
-  pad.start();pad.stop(ct+dur+0.5);
-
-  return master;
-}
-function generarMusicaSoft(ctx,dur){
-  const master=ctx.createGain();master.gain.value=.04;
-  const pad=ctx.createOscillator(),pg=ctx.createGain();pad.type='sine';pad.frequency.value=220;pg.gain.value=.4;pad.connect(pg);pg.connect(master);pad.start();pad.stop(ctx.currentTime+dur+2);
+  pad.type='triangle';pad.frequency.value=196;pg.gain.value=0.4;
+  pad.connect(pg);pg.connect(master);pad.start();pad.stop(ct+dur+0.5);
   return master;
 }
 
-function setProg(pct,label){document.getElementById('pwrap').classList.add('v');document.getElementById('pfill').style.width=pct+'%';document.getElementById('plabel').textContent=label;}
+function setProg(pct,label){
+  document.getElementById('pwrap').classList.add('v');
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('plabel').textContent=label;
+}
 function hideProg(){document.getElementById('pwrap').classList.remove('v');}
 
 async function generarAudio(){
@@ -462,23 +581,30 @@ async function generarAudio(){
   if(!voiceId){toast('Seleccioná una voz');return;}
   const guion=document.getElementById('guion-area').value.trim();
   if(!guion){toast('El guión está vacío');return;}
-  document.getElementById('btn-generar').disabled=true;
+
+  document.getElementById('footer-main').disabled=true;
   document.getElementById('result-audio').classList.remove('v');
+
   try{
-    setProg(20,'Generando voz...');
+    setProg(20,'Generando voz con Facundo...');
     const rVoz=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,{
       method:'POST',
       headers:{'xi-api-key':ELEVEN_KEY,'Content-Type':'application/json','Accept':'audio/mpeg'},
-      body:JSON.stringify({text:guion,model_id:'eleven_multilingual_v2',voice_settings:{stability:.30,similarity_boost:.75,style:.2,use_speaker_boost:true,speed:1.15}})
+      body:JSON.stringify({
+        text:guion,model_id:'eleven_multilingual_v2',
+        voice_settings:{stability:.30,similarity_boost:.75,style:.2,use_speaker_boost:true,speed:1.15}
+      })
     });
     if(!rVoz.ok) throw new Error('ElevenLabs '+rVoz.status);
     const vozBlob=await rVoz.blob();
     const musicType=document.getElementById('music-select').value;
-    setProg(65,'Mezclando audio...');
+
+    setProg(65,'Mezclando con música...');
     await sleep(200);
 
     if(musicType==='none'){
       state.audioBlob=new Blob([await vozBlob.arrayBuffer()],{type:'audio/mpeg'});
+      state.renderedBuffer=null;
     } else {
       const vozBuf=await fetch(URL.createObjectURL(vozBlob)).then(r=>r.arrayBuffer());
       const tmpCtx=new AudioContext();
@@ -486,32 +612,81 @@ async function generarAudio(){
       await tmpCtx.close();
       const dur=vozDec.duration+3;
       const offCtx=new OfflineAudioContext(2,Math.ceil(dur*44100),44100);
-
-      // Voz
       const src=offCtx.createBufferSource();src.buffer=vozDec;
       const vg=offCtx.createGain();vg.gain.value=1;
       src.connect(vg);vg.connect(offCtx.destination);src.start(1.5);
       vg.gain.setValueAtTime(1,dur-1.5);vg.gain.linearRampToValueAtTime(0,dur);
-
-      // Música local con envelope dinámico
-      if(musicType==='news'){
-        // Estimar cuando termina el dolar en el guion (~primeras 15 seg)
-        const finDolar = 1.5 + 14;
-        generarMusicaNews(offCtx, dur, 1.5, finDolar);
-      }
-
+      generarMusicaNews(offCtx,dur,1.5,16);
       setProg(85,'Renderizando...');
       const rendered=await offCtx.startRendering();
-      state.audioBlob=audioBufferToWav(rendered);
+      state.renderedBuffer=rendered;
+      state.audioBlob=await audioBufferToWebM(rendered);
     }
+
     setProg(100,'¡Listo!');await sleep(300);hideProg();
     const url=URL.createObjectURL(state.audioBlob);
     document.getElementById('player').src=url;
     document.getElementById('result-audio').classList.add('v');
-    document.getElementById('audio-nav').style.display='none';
+    document.getElementById('footer-main').style.display='none';
     toast('✓ Flash generado');
-  }catch(e){hideProg();toast('Error: '+e.message,5000);console.error(e);}
-  document.getElementById('btn-generar').disabled=false;
+  }catch(e){
+    hideProg();toast('Error: '+e.message,5000);console.error(e);
+  }
+  document.getElementById('footer-main').disabled=false;
+}
+
+async function audioBufferToWebM(buf){
+  const ctx=new AudioContext({sampleRate:buf.sampleRate});
+  const dest=ctx.createMediaStreamDestination();
+  const src=ctx.createBufferSource();src.buffer=buf;src.connect(dest);
+  const mime=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg']
+    .find(m=>MediaRecorder.isTypeSupported(m))||'audio/webm';
+  return new Promise((resolve,reject)=>{
+    const chunks=[];
+    const rec=new MediaRecorder(dest.stream,{mimeType:mime,audioBitsPerSecond:128000});
+    rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+    rec.onstop=()=>{ctx.close();resolve(new Blob(chunks,{type:mime}));};
+    rec.onerror=reject;
+    rec.start(100);src.start(0);
+    src.onended=()=>setTimeout(()=>rec.stop(),300);
+  });
+}
+
+function getFecha(){
+  return new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+}
+function descargarBlob(blob,nombre){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=nombre;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+async function descargarRadio(){
+  if(!state.renderedBuffer&&!state.audioBlob){toast('Generá el audio primero');return;}
+  document.getElementById('btn-dl-radio').disabled=true;
+  toast('Preparando WAV...');
+  try{
+    let wavBlob;
+    if(state.renderedBuffer){
+      wavBlob=audioBufferToWav(state.renderedBuffer);
+    } else {
+      const ab=await state.audioBlob.arrayBuffer();
+      const ctx=new AudioContext();
+      const decoded=await ctx.decodeAudioData(ab);
+      await ctx.close();
+      wavBlob=audioBufferToWav(decoded);
+    }
+    descargarBlob(wavBlob,`flash-radio-${getFecha()}.wav`);
+    toast('✓ WAV descargado para Jazzler');
+  }catch(e){toast('Error: '+e.message,4000);}
+  document.getElementById('btn-dl-radio').disabled=false;
+}
+
+async function descargarWasap(){
+  if(!state.audioBlob){toast('Generá el audio primero');return;}
+  const ext=state.audioBlob.type.includes('ogg')?'ogg':state.audioBlob.type.includes('webm')?'webm':'mp3';
+  descargarBlob(state.audioBlob,`flash-wasap-${getFecha()}.${ext}`);
+  toast('✓ Descargado para WhatsApp');
 }
 
 function audioBufferToWav(buf){
@@ -523,27 +698,17 @@ function audioBufferToWav(buf){
   v.setUint32(24,sr,true);v.setUint32(28,sr*nc*2,true);v.setUint16(32,nc*2,true);
   v.setUint16(34,16,true);w(36,'data');v.setUint32(40,len*nc*2,true);
   let off=44;
-  for(let i=0;i<len;i++)for(let c=0;c<nc;c++){const s=Math.max(-1,Math.min(1,buf.getChannelData(c)[i]));v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;}
+  for(let i=0;i<len;i++)for(let c=0;c<nc;c++){
+    const s=Math.max(-1,Math.min(1,buf.getChannelData(c)[i]));
+    v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;
+  }
   return new Blob([ab],{type:'audio/wav'});
 }
 
-function descargar(){
-  if(!state.audioBlob)return;
-  const fecha=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
-  // Si es MP3 nativo (sin música) descarga como .mp3, si es WAV mezclado como .wav
-  const esMp3=state.audioBlob.type.includes('mpeg')||state.audioBlob.type.includes('mp3');
-  const ext=esMp3?'mp3':'wav';
-  const url=URL.createObjectURL(state.audioBlob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`flash-misiones-${fecha}.${ext}`;a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),5000);
-  toast(`✓ Descargando ${ext.toUpperCase()}`);
-}
-
 function nuevoFlash(){
-  state.seleccionadas=[];state.guion='';state.audioBlob=null;
+  state.seleccionadas=[];state.guion='';state.audioBlob=null;state.renderedBuffer=null;
   document.getElementById('result-audio').classList.remove('v');
-  document.getElementById('audio-nav').style.display='';
+  document.getElementById('footer-main').style.display='';
   document.getElementById('guion-area').value='';
   irA(0);
 }
