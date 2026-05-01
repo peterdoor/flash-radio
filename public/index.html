@@ -141,9 +141,7 @@
       <select class="select" id="voice-select" style="margin-bottom:1rem;"></select>
       <label>MÚSICA DE FONDO</label>
       <select class="select" id="music-select">
-        <option value="eleven" selected>🎵 Música IA (ElevenLabs)</option>
-        <option value="news">Jingle de noticias (local)</option>
-        <option value="soft">Fondo suave (local)</option>
+        <option value="news" selected>🎵 Jingle de noticias</option>
         <option value="none">Sin música</option>
       </select>
     </div>
@@ -341,6 +339,7 @@ async function armarGuion(){
   if(dolarTexto) partes.push(dolarTexto);
   partes.push(cuerpo);
   if(climaFinal) partes.push(climaFinal);
+  if(dolarTexto) partes.push(dolarTexto); // dolar tambien al final
   partes.push(cierre);
 
   state.guion=partes.join('\n\n');
@@ -399,12 +398,54 @@ async function generarMusicaElevenLabs(){
   return await r.arrayBuffer();
 }
 
-function generarMusicaNews(ctx,dur){
-  const master=ctx.createGain();master.gain.value=0.06;
-  const seq=[[1046,0,.10],[1318,.13,.10],[1568,.27,.16],[1318,.47,.10],[1046,.61,.10],[1568,.75,.22],[1318,1.02,.10],[1046,1.16,.10],[1175,1.30,.16],[1046,1.50,.10],[1568,1.65,.30]];
-  function tocar(off){seq.forEach(([f,t,d])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;const st=ctx.currentTime+off+t;g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.7,st+.015);g.gain.linearRampToValueAtTime(0,st+d);o.connect(g);g.connect(master);o.start(st);o.stop(st+d+.05);});}
-  for(let t=0;t<dur;t+=20)tocar(t);
-  const pad=ctx.createOscillator(),pg=ctx.createGain();pad.type='triangle';pad.frequency.value=196;pg.gain.value=.012;pad.connect(pg);pg.connect(master);pad.start();pad.stop(ctx.currentTime+dur+2);
+function generarMusicaNews(ctx, dur, inicioVoz=1.5, finDolar=6) {
+  // Master con envelope dinamico:
+  // 0 → inicioVoz: fuerte (jingle intro)
+  // inicioVoz → finDolar: medio (mientras dice dolar)
+  // finDolar → dur-3: muy bajo (fondo durante noticias)
+  // dur-3 → dur: sube al cierre
+  const master = ctx.createGain();
+  const ct = ctx.currentTime;
+  master.gain.setValueAtTime(0, ct);
+  master.gain.linearRampToValueAtTime(0.18, ct + 0.3);           // sube rapido al inicio
+  master.gain.setValueAtTime(0.18, ct + inicioVoz);               // fuerte hasta que habla
+  master.gain.linearRampToValueAtTime(0.06, ct + inicioVoz + 1);  // baja cuando empieza voz
+  master.gain.setValueAtTime(0.06, ct + finDolar);                 // medio mientras dolar
+  master.gain.linearRampToValueAtTime(0.015, ct + finDolar + 1.5);// muy baja en noticias
+  master.gain.setValueAtTime(0.015, ct + dur - 4);                 // sigue baja
+  master.gain.linearRampToValueAtTime(0.10, ct + dur - 2);         // sube al cierre
+  master.gain.linearRampToValueAtTime(0, ct + dur);                // fade out final
+  master.connect(ctx.destination);
+
+  // Jingle: secuencia de notas tipo noticiero
+  const seq=[[1046,0,.10],[1318,.13,.10],[1568,.27,.16],[1318,.47,.10],
+             [1046,.61,.10],[1568,.75,.22],[1318,1.02,.10],[1046,1.16,.10],
+             [1175,1.30,.16],[1046,1.50,.10],[1568,1.65,.30]];
+
+  function tocar(off){
+    seq.forEach(([f,t,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sine';o.frequency.value=f;
+      const st=ct+off+t;
+      g.gain.setValueAtTime(0,st);
+      g.gain.linearRampToValueAtTime(.8,st+.015);
+      g.gain.linearRampToValueAtTime(0,st+d);
+      o.connect(g);g.connect(master);
+      o.start(st);o.stop(st+d+.05);
+    });
+  }
+
+  // Jingle al inicio y al cierre
+  tocar(0);
+  tocar(dur - 2.5);
+
+  // Pad suave de fondo continuo
+  const pad=ctx.createOscillator(),pg=ctx.createGain();
+  pad.type='triangle';pad.frequency.value=196;
+  pg.gain.value=0.4;
+  pad.connect(pg);pg.connect(master);
+  pad.start();pad.stop(ct+dur+0.5);
+
   return master;
 }
 function generarMusicaSoft(ctx,dur){
@@ -452,29 +493,11 @@ async function generarAudio(){
       src.connect(vg);vg.connect(offCtx.destination);src.start(1.5);
       vg.gain.setValueAtTime(1,dur-1.5);vg.gain.linearRampToValueAtTime(0,dur);
 
-      // Música
-      if(musicType==='eleven'){
-        setProg(70,'Generando música con IA...');
-        try{
-          const musicBuf=await generarMusicaElevenLabs();
-          const musicDec=await offCtx.decodeAudioData(musicBuf);
-          const musicSrc=offCtx.createBufferSource();
-          musicSrc.buffer=musicDec;
-          musicSrc.loop=true;
-          const mg=offCtx.createGain();mg.gain.value=0.12;
-          // Fade out musica al final
-          mg.gain.setValueAtTime(0.12,dur-2);
-          mg.gain.linearRampToValueAtTime(0,dur);
-          musicSrc.connect(mg);mg.connect(offCtx.destination);
-          musicSrc.start(0);
-        }catch(e){
-          console.warn('Música ElevenLabs falló, usando local:',e);
-          generarMusicaNews(offCtx,dur).connect(offCtx.destination);
-        }
-      } else if(musicType==='news'){
-        generarMusicaNews(offCtx,dur).connect(offCtx.destination);
-      } else if(musicType==='soft'){
-        generarMusicaSoft(offCtx,dur).connect(offCtx.destination);
+      // Música local con envelope dinámico
+      if(musicType==='news'){
+        // Estimar cuando termina el dolar en el guion (~primeras 15 seg)
+        const finDolar = 1.5 + 14;
+        generarMusicaNews(offCtx, dur, 1.5, finDolar);
       }
 
       setProg(85,'Renderizando...');
