@@ -315,7 +315,10 @@
       <div class="ra-title">✓ FLASH LISTO</div>
       <audio id="player" controls></audio>
       <div style="display:flex;gap:.6rem;flex-direction:column;">
-        <button class="btn btn-yellow" id="btn-dl-radio" onclick="descargarRadio()" style="width:100%">📻 DESCARGAR PARA RADIO (WAV)</button>
+        <div style="display:flex;gap:.5rem;width:100%;">
+  <button class="btn btn-yellow" id="btn-dl-radio" onclick="descargarRadio('mp3')" style="flex:1">📻 MP3 RADIO</button>
+  <button class="btn btn-ghost" id="btn-dl-wav" onclick="descargarRadio('wav')" style="flex:1;border:1px solid var(--amarillo);color:var(--amarillo)">📼 WAV</button>
+</div>
         <button class="btn btn-green-solid" id="btn-dl-wasap" onclick="compartirWasap()" style="width:100%;background:#25D366;color:white;">💬 COMPARTIR EN WASAP</button>
       </div>
     </div>
@@ -564,7 +567,7 @@ async function armarGuion(){
   // Combustibles YPF referencia (se actualizan manualmente cuando cambian)
   const nafta_super=1999;
   const gasoil=2099;
-  combustiblesTexto=`En combustibles, la nafta súper de YPF se ubica en ${nafta_super} pesos el litro y el gasoil en ${gasoil} pesos.`;
+  combustiblesTexto=`En combustibles, la nafta súper de Yé Pé Efe se ubica en ${nafta_super} pesos el litro y el gasoil en ${gasoil} pesos.`;
 
 
 
@@ -737,6 +740,8 @@ function limpiarTextoTTS(txt){
     .replace(/BCRA/g,'Banco Central')
     .replace(/ANSES/g,'Anses')
     .replace(/IVA/g,'iva')
+    .replace(/YPF/g,'Yé Pé Efe')
+    .replace(/AR/g,'Aerolíneas Argentinas')
     .replace(/USD/g,'dólares')
     .replace(/&/g,'y')
     .replace(/1°/g,'primero').replace(/2°/g,'segundo').replace(/3°/g,'tercero')
