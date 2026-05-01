@@ -332,10 +332,7 @@
       <div class="ra-title">✓ FLASH LISTO</div>
       <audio id="player" controls></audio>
       <div style="display:flex;gap:.6rem;flex-direction:column;">
-        <div style="display:flex;gap:.5rem;width:100%;">
-          <button class="btn btn-yellow" id="btn-dl-radio" onclick="descargarRadio('mp3')" style="flex:1">📻 MP3</button>
-          <button class="btn btn-ghost" id="btn-dl-wav" onclick="descargarRadio('wav')" style="flex:1;border:1px solid var(--amarillo);color:var(--amarillo)">📼 WAV</button>
-        </div>
+        <button class="btn btn-yellow" id="btn-dl-radio" onclick="descargarRadio()" style="width:100%">📻 DESCARGAR PARA RADIO (MP3)</button>
         <button class="btn btn-green-solid" id="btn-dl-wasap" onclick="compartirWasap()" style="width:100%;background:#25D366;color:white;">💬 COMPARTIR EN WASAP</button>
         <div style="display:flex;gap:.5rem;width:100%;margin-top:.4rem;">
           <button class="btn btn-ghost" onclick="volverGuion()" style="flex:1">← VOLVER</button>
@@ -1090,27 +1087,11 @@ function descargarBlob(blob,nombre){
   setTimeout(()=>URL.revokeObjectURL(url),5000);
 }
 
-async function descargarRadio(formato='mp3'){
+function descargarRadio(){
   const blob=state.audioBlob||state.mp3Blob;
   if(!blob){toast('Generá el audio primero');return;}
-  const fecha=getFecha();
-  if(formato==='wav'){
-    toast('Convirtiendo a WAV...');
-    try{
-      const ab=await blob.arrayBuffer();
-      const ctx=new AudioContext();
-      const decoded=await ctx.decodeAudioData(ab);
-      await ctx.close();
-      descargarBlob(audioBufferToWav(decoded),`flash-radio-${fecha}.wav`);
-      toast('✓ WAV descargado');
-    }catch(e){
-      descargarBlob(blob,`flash-radio-${fecha}.mp3`);
-      toast('✓ MP3 descargado');
-    }
-  } else {
-    descargarBlob(blob,`flash-radio-${fecha}.mp3`);
-    toast('✓ MP3 descargado para radio');
-  }
+  descargarBlob(blob,`flash-radio-${getFecha()}.mp3`);
+  toast('✓ MP3 descargado para radio');
 }
 
 async function mezclarConFFmpeg(blob, calidad='radio'){
@@ -1125,18 +1106,17 @@ async function mezclarConFFmpeg(blob, calidad='radio'){
 }
 
 async function compartirWasap(){
-  const blob=state.mp3Blob||state.audioBlob;
+  const blob=state.audioBlob||state.mp3Blob;
   if(!blob){toast('Generá el audio primero');return;}
   const btn=document.getElementById('btn-dl-wasap');
   btn.disabled=true;
   toast('Preparando versión liviana...');
   const fecha=getFecha();
   try{
-    // Versión liviana para WhatsApp: 64kbps mono
-    const wasapBlob=await mezclarConFFmpeg(state.mp3Blob,'wasap');
-    const archivo=new File([wasapBlob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
+    // Recomprimir a 64kbps mono para WhatsApp via servidor
+    const wasapBlob=await mezclarConFFmpeg(blob,'wasap');
     const mb=(wasapBlob.size/1024/1024).toFixed(1);
-    // Web Share API
+    const archivo=new File([wasapBlob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
       try{
         await navigator.share({files:[archivo],title:'Flash Informativo Misiones Cuatro'});
@@ -1144,13 +1124,9 @@ async function compartirWasap(){
       }catch(e){ if(e.name==='AbortError'){btn.disabled=false;return;} }
     }
     descargarBlob(wasapBlob,`flash-wasap-${fecha}.mp3`);
-    toast(`✓ MP3 liviano descargado (${mb} MB)`);
+    toast(`✓ WhatsApp listo (${mb} MB)`);
   }catch(e){
-    // Fallback: usar audioBlob directo
-    const archivo=new File([blob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
-      try{ await navigator.share({files:[archivo],title:'Flash Informativo Misiones Cuatro'});btn.disabled=false;return; }catch(e2){}
-    }
+    // Fallback: mismo MP3 de radio
     descargarBlob(blob,`flash-wasap-${fecha}.mp3`);
     toast('✓ MP3 descargado para WhatsApp');
   }
