@@ -202,7 +202,7 @@ async function fetchRSS(feed){
     const xml=new DOMParser().parseFromString(txt,'text/xml');
     return Array.from(xml.querySelectorAll('item')).slice(0,20).map(item=>({
       titulo:item.querySelector('title')?.textContent?.trim()||'',
-      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,160),
+      desc:(item.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,300),
       fuente:feed.name,
     })).filter(n=>n.titulo.length>5);
   }catch(e){console.warn('RSS',feed.name,e.message);return[];}
@@ -251,7 +251,17 @@ function actualizarCounter(){
 
 function armarGuion(){
   const noticias=state.seleccionadas.map(i=>state.noticias[i]);
-  const cuerpo=noticias.map(n=>{let t=n.titulo.trim();if(!t.match(/[.?!]$/))t+='.';return t;}).join('\n\n');
+  const cuerpo=noticias.map(n=>{
+    let t=n.titulo.trim();
+    if(!t.match(/[.?!]$/))t+='.';
+    let bajada='';
+    if(n.desc&&n.desc.trim().length>20){
+      bajada=n.desc.trim();
+      if(!bajada.match(/[.?!]$/))bajada+='.';
+      bajada='\n'+bajada;
+    }
+    return t+bajada;
+  }).join('\n\n');
   state.guion=`Noticias de Misiones Cuatro en dos minutos.\n\n${cuerpo}\n\nEso es todo por este flash. Seguimos informando en Misiones Cuatro.`;
   document.getElementById('guion-area').value=state.guion;
   actualizarStats();irA(2);
