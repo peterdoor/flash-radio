@@ -574,19 +574,15 @@ async function armarGuion(){
     return t+'\n'+b;
   });
 
-  // Calcular duracion estimada del guion completo
   function estimarDuracion(palabras){
-    const seg=Math.round(palabras/2.5); // ~2.5 palabras/segundo
+    const seg=Math.round(palabras/2.5);
     const min=Math.floor(seg/60);
     const s=seg%60;
     if(min===0) return `${s} segundos`;
     if(s===0) return `${min} ${min===1?'minuto':'minutos'}`;
     return `${min} minuto${min>1?'s':''} y ${s} segundos`;
   }
-  const palabrasGuion=cuerpo.split(/\s+/).filter(Boolean).length+
-    [climaInicio,dolarTexto,combustiblesTexto,climaFinal].join(' ').split(/\s+/).filter(Boolean).length;
-  const durEst=estimarDuracion(palabrasGuion+40); // +40 por intro/cierre
-  const intro=`Noticias e información actualizada de Misiones Cuatro. Duración aproximada: ${durEst}.`;
+  const intro='Noticias e información actualizada de Misiones Cuatro.';
   const cierre='Eso es todo por este flash. Seguimos informando en Misiones Cuatro.';
 
   let cuerpo='';
@@ -595,7 +591,13 @@ async function armarGuion(){
     cuerpo+=(cuerpo?'\n\n':'')+bloque;
   }
 
-  const partes=[intro];
+  // Duracion real basada en el cuerpo ya armado
+  const palabrasGuion=cuerpo.split(/\s+/).filter(Boolean).length+
+    [climaInicio,dolarTexto,combustiblesTexto,climaFinal].join(' ').split(/\s+/).filter(Boolean).length;
+  const durEst=estimarDuracion(palabrasGuion+40);
+  const introFinal=`Noticias e información actualizada de Misiones Cuatro. Duración aproximada: ${durEst}.`;
+
+  const partes=[introFinal];
   if(climaInicio)partes.push(climaInicio);
   if(dolarTexto)partes.push(dolarTexto);
   partes.push(combustiblesTexto);
