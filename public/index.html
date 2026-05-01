@@ -1114,82 +1114,35 @@ async function compartirWasap(){
   const blob=state.audioBlob||state.mp3Blob;
   if(!blob){toast('Generá el audio primero');return;}
   const fecha=getFecha();
-
-  // Si ya tenemos el blob liviano cacheado, compartir directo
-  if(state.wasapBlob){
-    const archivo=new File([state.wasapBlob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
-      try{ await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'}); return; }
-      catch(e){ if(e.name==='AbortError') return; }
-    }
-    descargarBlob(state.wasapBlob,`flash-wasap-${fecha}.mp3`);
-    return;
-  }
-
-  // Comprimir en browser: decodificar → reducir sample rate → re-encodear como OGG Opus
   const btn=document.getElementById('btn-dl-wasap');
   btn.disabled=true;
-  toast('Comprimiendo para WhatsApp...');
+  toast('Comprimiendo...');
+
   try{
-    const ab=await blob.arrayBuffer();
-    const ctx=new AudioContext();
-    const decoded=await ctx.decodeAudioData(ab.slice(0));
-    await ctx.close();
-
-    // Reducir a mono 22050Hz con OfflineAudioContext
-    const SR=22050;
-    const offCtx=new OfflineAudioContext(1, Math.ceil(decoded.duration*SR), SR);
-    const src=offCtx.createBufferSource();
-    src.buffer=decoded;
-    // Mezclar a mono
-    const merger=offCtx.createChannelMerger(1);
-    src.connect(offCtx.destination);
-    src.start(0);
-    const rendered=await offCtx.startRendering();
-
-    // Grabar como OGG Opus (muy liviano, WhatsApp lo acepta)
-    const ctx2=new AudioContext({sampleRate:SR});
-    const dest=ctx2.createMediaStreamDestination();
-    const src2=ctx2.createBufferSource();
-    src2.buffer=rendered;
-    src2.connect(dest);
-
-    const mime=MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
-      ?'audio/ogg;codecs=opus'
-      :'audio/webm;codecs=opus';
-
-    const wasapBlob=await new Promise((res,rej)=>{
-      const chunks=[];
-      const rec=new MediaRecorder(dest.stream,{mimeType:mime,audioBitsPerSecond:32000});
-      rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-      rec.onstop=()=>{ctx2.close();res(new Blob(chunks,{type:mime}));};
-      rec.onerror=rej;
-      rec.start(100);
-      src2.start(0);
-      src2.onended=()=>setTimeout(()=>rec.stop(),300);
+    // Comprimir via servidor (FFmpeg 64kbps mono)
+    const b64=await blobToBase64(blob);
+    const r=await fetch('/api/mp3mix',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({voz:b64, calidad:'wasap'})
     });
+    const wasap = r.ok ? await r.blob() : blob;
+    const mb=(wasap.size/1024/1024).toFixed(1);
+    const archivo=new File([wasap],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
 
-    state.wasapBlob=wasapBlob;
-    const mb=(wasapBlob.size/1024/1024).toFixed(1);
-    const ext=mime.includes('ogg')?'ogg':'weba';
-    const archivo=new File([wasapBlob],`flash-wasap-${fecha}.${ext}`,{type:mime});
-
+    // Compartir nativo — abre WhatsApp directo
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
-      try{ await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'}); btn.disabled=false; return; }
-      catch(e){ if(e.name==='AbortError'){btn.disabled=false;return;} }
+      try{
+        await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'});
+        btn.disabled=false; return;
+      }catch(e){ if(e.name==='AbortError'){btn.disabled=false;return;} }
     }
-    descargarBlob(wasapBlob,`flash-wasap-${fecha}.${ext}`);
-    toast(`✓ WhatsApp (${mb} MB)`);
+    // Fallback: descargar
+    descargarBlob(wasap,`flash-wasap-${fecha}.mp3`);
+    toast(`✓ Descargado (${mb} MB)`);
   }catch(e){
-    console.error(e);
-    // Fallback: mismo MP3
-    const archivo=new File([blob],`flash-wasap-${fecha}.mp3`,{type:'audio/mpeg'});
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
-      try{ await navigator.share({files:[archivo],title:'Flash Misiones Cuatro'}); btn.disabled=false; return; }
-      catch(e2){ if(e2.name==='AbortError'){btn.disabled=false;return;} }
-    }
     descargarBlob(blob,`flash-wasap-${fecha}.mp3`);
-    toast('✓ MP3 descargado para WhatsApp');
+    toast('✓ MP3 descargado');
   }
   btn.disabled=false;
 }
