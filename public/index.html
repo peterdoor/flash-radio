@@ -529,30 +529,38 @@ function actualizarStats(){
 // VOCES
 async function cargarVoces(){
   const sel=document.getElementById('voice-select');
-  sel.innerHTML=VOCES_DEFAULT.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  // Siempre mostrar defaults primero
+  sel.innerHTML=VOCES_DEFAULT.map(v=>`<option value="${v.id}" ${v.id==='qnvusyIjzlSoWYJ0C2Nm'?'selected':''}>${v.name}</option>`).join('');
   try{
+    // Cargar voces reales desde el servidor (incluye Mis Voces de ElevenLabs)
     const r=await fetch('/api/voices');
+    if(!r.ok) return;
     const d=await r.json();
     const voces=d.voices||[];
     if(voces.length){
       sel.innerHTML='';
+      // Poner Facundo primero, luego españolas, luego el resto
+      const FACUNDO='qnvusyIjzlSoWYJ0C2Nm';
       const orden=[
-        ...voces.filter(v=>v.voice_id==='qnvusyIjzlSoWYJ0C2Nm'),
-        ...voces.filter(v=>v.voice_id!=='qnvusyIjzlSoWYJ0C2Nm'&&(v.labels?.language||'').toLowerCase().includes('spanish')),
-        ...voces.filter(v=>!(v.labels?.language||'').toLowerCase().includes('spanish')),
+        ...voces.filter(v=>v.voice_id===FACUNDO),
+        ...voces.filter(v=>v.voice_id!==FACUNDO&&(v.labels?.language||'').toLowerCase().includes('spanish')),
+        ...voces.filter(v=>v.voice_id!==FACUNDO&&!(v.labels?.language||'').toLowerCase().includes('spanish')),
       ];
       const vistos=new Set();
-      orden.filter(v=>{if(vistos.has(v.voice_id))return false;vistos.add(v.voice_id);return true;})
-        .slice(0,20).forEach(v=>{
-          const o=document.createElement('option');
-          o.value=v.voice_id;
-          const isFacundo=v.voice_id==='qnvusyIjzlSoWYJ0C2Nm';
-          o.textContent=(isFacundo?'⭐ ':'')+v.name;
-          if(isFacundo)o.selected=true;
-          sel.appendChild(o);
-        });
+      orden.filter(v=>{
+        if(vistos.has(v.voice_id))return false;
+        vistos.add(v.voice_id);return true;
+      }).slice(0,30).forEach(v=>{
+        const o=document.createElement('option');
+        o.value=v.voice_id;
+        const acc=v.labels?.accent||v.labels?.language||'';
+        o.textContent=(v.voice_id===FACUNDO?'⭐ ':'')+v.name+(acc?' — '+acc:'');
+        if(v.voice_id===FACUNDO) o.selected=true;
+        sel.appendChild(o);
+      });
+      toast('✓ '+voces.length+' voces cargadas');
     }
-  }catch(e){}
+  }catch(e){ console.warn('voces:',e); }
 }
 
 // MUSICA
