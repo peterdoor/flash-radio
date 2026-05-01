@@ -245,10 +245,12 @@
       <div id="google-config" style="display:none">
         <span class="config-label">Voz Google (español argentino)</span>
         <select class="select" id="google-voice" style="margin-bottom:.8rem;">
-          <option value="es-AR-Neural2-B">Neural2-B — masculina (recomendada)</option>
-          <option value="es-AR-Neural2-A">Neural2-A — femenina</option>
-          <option value="es-AR-Standard-B">Standard-B — masculina (básica)</option>
-          <option value="es-AR-Standard-A">Standard-A — femenina (básica)</option>
+          <option value="es-AR-WaveNet-C">WaveNet-C — masculina (recomendada)</option>
+          <option value="es-AR-WaveNet-B">WaveNet-B — masculina</option>
+          <option value="es-AR-WaveNet-D">WaveNet-D — femenina</option>
+          <option value="es-AR-WaveNet-A">WaveNet-A — femenina</option>
+          <option value="es-AR-Standard-B">Standard-B — masculina (básica, gratis)</option>
+          <option value="es-AR-Standard-A">Standard-A — femenina (básica, gratis)</option>
         </select>
       </div>
       <span class="config-label">Música de fondo</span>
@@ -668,20 +670,14 @@ async function generarAudio(){
   document.getElementById('footer-main').disabled=false;
 }
 
-async function audioBufferToWebM(buf){
-  const ctx=new AudioContext({sampleRate:buf.sampleRate});
-  const dest=ctx.createMediaStreamDestination();
-  const src=ctx.createBufferSource();src.buffer=buf;src.connect(dest);
-  const mime=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg']
-    .find(m=>MediaRecorder.isTypeSupported(m))||'audio/webm';
-  return new Promise((resolve,reject)=>{
-    const chunks=[];
-    const rec=new MediaRecorder(dest.stream,{mimeType:mime,audioBitsPerSecond:128000});
-    rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-    rec.onstop=()=>{ctx.close();resolve(new Blob(chunks,{type:mime}));};
-    rec.onerror=reject;
-    rec.start(100);src.start(0);
-    src.onended=()=>setTimeout(()=>rec.stop(),300);
+// audioBufferToWebM eliminado - ya no se usa
+
+function blobToBase64(blob){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(blob);
   });
 }
 
@@ -715,55 +711,12 @@ async function descargarRadio(){
   document.getElementById('btn-dl-radio').disabled=false;
 }
 
-async function descargarWasap(){
-  if(!state.mp3Blob&&!state.audioBlob){toast('Generá el audio primero');return;}
-  const fecha=getFecha();
-  const btn=document.getElementById('btn-dl-wasap');
-  btn.disabled=true;
-  toast('Preparando MP3 para WhatsApp...');
-
-  try{
-    let mp3Blob;
-    if(state.mp3Blob){
-      // Ya tenemos MP3 puro de ElevenLabs/OpenAI
-      mp3Blob=state.mp3Blob;
-    } else if(state.renderedBuffer){
-      // Tenemos WAV con música — convertir a MP3 via servidor
-      const wav=audioBufferToWav(state.renderedBuffer);
-      const arrayBuf=await wav.arrayBuffer();
-      // Convertir ArrayBuffer a base64 en chunks para no romper el stack
-      const uint8=new Uint8Array(arrayBuf);
-      let b64='';
-      const CHUNK=8192;
-      for(let i=0;i<uint8.length;i+=CHUNK){
-        b64+=String.fromCharCode(...uint8.subarray(i,i+CHUNK));
-      }
-      const base64=btoa(b64);
-
-      const r=await fetch('/api/convert',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({wav:base64})
-      });
-      if(!r.ok) throw new Error('Conversión falló: '+r.status);
-      mp3Blob=await r.blob();
-    } else {
-      mp3Blob=state.audioBlob;
-    }
-
-    descargarBlob(mp3Blob,`flash-wasap-${fecha}.mp3`);
-    toast('✓ MP3 con música descargado');
-  }catch(e){
-    console.error(e);
-    // Fallback: mp3 sin música
-    if(state.mp3Blob){
-      descargarBlob(state.mp3Blob,`flash-wasap-${fecha}.mp3`);
-      toast('✓ MP3 descargado (sin música)');
-    } else {
-      toast('Error: '+e.message,4000);
-    }
-  }
-  btn.disabled=false;
+function descargarWasap(){
+  const blob=state.mp3Blob||state.audioBlob;
+  if(!blob){toast('Generá el audio primero');return;}
+  // MP3 puro — instantáneo, WhatsApp lo acepta perfecto
+  descargarBlob(blob,`flash-wasap-${getFecha()}.mp3`);
+  toast('✓ MP3 descargado para WhatsApp');
 }
 
 function audioBufferToWav(buf){

@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
           input: { text: texto },
           voice: {
             languageCode: 'es-AR',
-            name: voz || 'es-AR-Neural2-B', // masculina argentina
+            name: voz || 'es-AR-WaveNet-C', // masculina argentina
             ssmlGender: 'MALE'
           },
           audioConfig: {
