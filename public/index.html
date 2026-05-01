@@ -97,12 +97,12 @@
   .counter-fill{height:100%;background:var(--amarillo);transition:width .3s;border-radius:2px;}
 
   .noticia-item{
-    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:8px;
     padding:.9rem 1rem;cursor:pointer;transition:all .15s;
     display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.5rem;
   }
   .noticia-item:active{transform:scale(.98);}
-  .noticia-item:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.12);}
+  .noticia-item:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08);}
   .noticia-item.sel{border-color:var(--rojo);background:rgba(193,39,45,.15);}
   .noticia-item.sel .ni-check{background:var(--rojo);border-color:var(--rojo);color:white;}
   .ni-check{
@@ -117,13 +117,13 @@
   .ni-fuente.ole{color:#22c55e;}
   .noticia-item.usada{opacity:.5;}
   .noticia-item.usada .ni-titulo::after{content:' ✓ ya usada';font-size:.65rem;color:#555;}
-  .ni-titulo{font-size:.92rem;line-height:1.4;color:#ffffff;font-weight:500;}
-  .ni-desc{font-size:.78rem;color:#aaa;line-height:1.4;margin-top:.3rem;}
+  .ni-titulo{font-size:.92rem;line-height:1.4;color:#f0f0f0;font-weight:500;}
+  .ni-desc{font-size:.78rem;color:#999;line-height:1.4;margin-top:.3rem;}
   .ni-loading{text-align:center;font-family:var(--mono);font-size:.75rem;color:#555;padding:3rem 1rem;}
 
   /* GUION */
   .guion-area{
-    width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;
+    width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);border-radius:8px;
     padding:1rem;color:var(--blanco);font-family:var(--sans);
     font-size:.92rem;line-height:1.85;resize:none;min-height:200px;
     height:calc(100vh - 280px);
@@ -132,10 +132,10 @@
   .guion-stats{font-family:var(--mono);font-size:.65rem;color:#555;margin-top:.5rem;}
 
   /* AUDIO CONFIG */
-  .audio-config{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:1rem;margin-bottom:1rem;}
+  .audio-config{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:1rem;margin-bottom:1rem;}
   .config-label{font-family:var(--mono);font-size:.65rem;color:#888;letter-spacing:1px;display:block;margin-bottom:.4rem;text-transform:uppercase;}
   .select{
-    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:6px;
+    background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);border-radius:6px;
     padding:.7rem .8rem;color:var(--blanco);font-family:var(--mono);
     font-size:.8rem;width:100%;appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%23666'/%3E%3C/svg%3E");
@@ -356,7 +356,7 @@
 <div class="toast" id="toast"></div>
 
 <div class="dev-footer" id="dev-footer">
-  <span class="dev-version">DoorApp v2.1</span>
+  <span class="dev-version">DoorApp v2.2</span>
   <button class="dev-reset" onclick="resetUsadas()" title="Resetear noticias usadas">↺ reset</button>
 </div>
 
