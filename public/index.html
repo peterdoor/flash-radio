@@ -1056,20 +1056,15 @@ async function generarAudio(){
       state.audioBlob=state.mp3Blob;
     }
 
-    setProg(80,'Generando versión radio...');
-    try{
-      const b64=await blobToBase64(state.mp3Blob);
-      const rRadio=await fetch('/api/mp3mix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({voz:b64,calidad:'radio'})});
-      if(rRadio.ok) state.audioBlob=await rRadio.blob();
-    }catch(e){ console.warn('mp3mix radio falló, usando original'); }
-
+    // state.audioBlob ya tiene intro+voz+outro mezclados
+    // Ahora hacer version wasap liviana del mismo audio completo
     setProg(90,'Generando versión WhatsApp...');
     try{
-      const b64=await blobToBase64(state.mp3Blob);
+      const b64=await blobToBase64(state.audioBlob);
       const rWasap=await fetch('/api/mp3mix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({voz:b64,calidad:'wasap'})});
       if(rWasap.ok) state.wasapBlob=await rWasap.blob();
-      else state.wasapBlob=state.mp3Blob;
-    }catch(e){ state.wasapBlob=state.mp3Blob; }
+      else state.wasapBlob=state.audioBlob;
+    }catch(e){ state.wasapBlob=state.audioBlob; }
 
     setProg(100,'¡Listo!');await sleep(200);hideProg();
     const url=URL.createObjectURL(state.audioBlob);
