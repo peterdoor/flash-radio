@@ -431,14 +431,15 @@ function irA(n){
     main.className='btn btn-primary';
   }
 
-  // Paso 4 (audio): ocultar sticky footer, los botones están dentro del resultado
+  // Paso 4: mostrar footer con boton generar
+  // Solo ocultar el footer si ya generó (los botones están dentro del resultado)
   const sf=document.getElementById('sticky-footer');
-  if(n===4){
+  sf.style.display='';
+  document.getElementById('scroll-area').style.paddingBottom='';
+  if(n===4&&document.getElementById('result-audio').classList.contains('v')){
     sf.style.display='none';
     document.getElementById('scroll-area').style.paddingBottom='1rem';
   } else {
-    sf.style.display='';
-    document.getElementById('scroll-area').style.paddingBottom='';
     main.style.display='';
   }
 }
@@ -1057,7 +1058,9 @@ async function generarAudio(){
     const url=URL.createObjectURL(state.audioBlob);
     document.getElementById('player').src=url;
     document.getElementById('result-audio').classList.add('v');
-    document.getElementById('footer-main').style.display='none';
+    // Ocultar sticky footer ahora que los botones están en el resultado
+    document.getElementById('sticky-footer').style.display='none';
+    document.getElementById('scroll-area').style.paddingBottom='1rem';
     toast('✓ Flash listo');
   }catch(e){
     hideProg();toast('Error: '+e.message,5000);console.error(e);
