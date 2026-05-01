@@ -1150,14 +1150,17 @@ function audioBufferToWav(buf){
 }
 
 function resetAudio(){
-  // Ocultar resultado y mostrar boton generar de nuevo
-  document.getElementById('result-audio').classList.remove('v');
-  const btn=document.getElementById('footer-main');
-  btn.style.display='';
-  btn.disabled=false;
   state.audioBlob=null;
   state.mp3Blob=null;
   state.renderedBuffer=null;
+  document.getElementById('result-audio').classList.remove('v');
+  // Volver a mostrar sticky footer con boton generar
+  const sf=document.getElementById('sticky-footer');
+  sf.style.display='';
+  document.getElementById('scroll-area').style.paddingBottom='';
+  const btn=document.getElementById('footer-main');
+  btn.style.display='';
+  btn.disabled=false;
 }
 
 function volverGuion(){
