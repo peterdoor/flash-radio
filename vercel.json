@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/generar.js": { "maxDuration": 120 },
+    "api/tts.js":     { "maxDuration": 60  },
+    "api/mp3mix.js":  { "maxDuration": 60  },
+    "api/voices.js":  { "maxDuration": 15  },
+    "api/rss.js":     { "maxDuration": 15  },
+    "api/transito.js":{ "maxDuration": 15  }
+  }
+}
