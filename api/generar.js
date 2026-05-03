@@ -11,12 +11,11 @@ export const config = {
   }
 };
 
-function runFFmpeg(ffmpegBin, ffmpegMod, inputs, filterComplex, outputOpts, outPath) {
+function runFFmpeg(ffmpegBin, ffmpegMod, inputPath, outputOpts, outPath) {
   return new Promise((resolve, reject) => {
-    let cmd = ffmpegMod().setFfmpegPath(ffmpegBin);
-    inputs.forEach(i => cmd = cmd.input(i));
-    cmd
-      .complexFilter(filterComplex)
+    ffmpegMod()
+      .setFfmpegPath(ffmpegBin)
+      .input(inputPath)
       .outputOptions(outputOpts)
       .output(outPath)
       .on('end', resolve)
@@ -40,8 +39,6 @@ export default async function handler(req, res) {
   const vozPath   = path.join(tmp, `voz_${ts}.mp3`);
   const radioPath = path.join(tmp, `radio_${ts}.mp3`);
   const wasapPath = path.join(tmp, `wasap_${ts}.mp3`);
-  const intro     = path.join(process.cwd(), 'public', 'intro.mp3');
-  const outro     = path.join(process.cwd(), 'public', 'outro.mp3');
 
   try {
     // 1. Generar voz
@@ -77,25 +74,19 @@ export default async function handler(req, res) {
     }
     fs.writeFileSync(vozPath, vozBuf);
 
-    // 2. FFmpeg
+    // 2. FFmpeg — normalizar volumen
     const ffmpegBin = require('ffmpeg-static');
     const ffmpegMod = require('fluent-ffmpeg');
 
-    // Sin intro/outro - solo voz
-
-    // Radio: voz normalizada 128kbps stereo
-    await runFFmpeg(ffmpegBin, ffmpegMod,
-      [vozPath],
-      null,
+    // Radio: 128kbps stereo normalizado a -14 LUFS
+    await runFFmpeg(ffmpegBin, ffmpegMod, vozPath,
       ['-af', 'loudnorm=I=-14:TP=-1:LRA=11', '-codec:a', 'libmp3lame', '-b:a', '128k', '-ar', '44100', '-ac', '2'],
       radioPath
     );
 
-    // WhatsApp: voz normalizada 48kbps mono
-    await runFFmpeg(ffmpegBin, ffmpegMod,
-      [vozPath],
-      null,
-      ['-af', 'loudnorm=I=-16:TP=-1:LRA=11', '-codec:a', 'libmp3lame', '-b:a', '48k', '-ar', '24000', '-ac', '1'],
+    // WhatsApp: 48kbps mono normalizado
+    await runFFmpeg(ffmpegBin, ffmpegMod, vozPath,
+      ['-af', 'loudnorm=I=-14:TP=-1:LRA=11', '-codec:a', 'libmp3lame', '-b:a', '48k', '-ar', '24000', '-ac', '1'],
       wasapPath
     );
 
