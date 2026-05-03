@@ -80,13 +80,13 @@ export default async function handler(req, res) {
 
     // Radio: 128kbps stereo normalizado a -14 LUFS
     await runFFmpeg(ffmpegBin, ffmpegMod, vozPath,
-      ['-af', 'loudnorm=I=-14:TP=-1:LRA=11', '-codec:a', 'libmp3lame', '-b:a', '128k', '-ar', '44100', '-ac', '2'],
+      ['-af', 'volume=3.0,loudnorm=I=-9:TP=-1:LRA=11', '-codec:a', 'libmp3lame', '-q:a', '0', '-ar', '44100', '-ac', '2'],
       radioPath
     );
 
     // WhatsApp: 48kbps mono normalizado
     await runFFmpeg(ffmpegBin, ffmpegMod, vozPath,
-      ['-af', 'loudnorm=I=-14:TP=-1:LRA=11', '-codec:a', 'libmp3lame', '-b:a', '48k', '-ar', '24000', '-ac', '1'],
+      ['-af', 'volume=3.0,loudnorm=I=-9:TP=-1:LRA=11', '-codec:a', 'libmp3lame', '-b:a', '48k', '-ar', '24000', '-ac', '1'],
       wasapPath
     );
 
