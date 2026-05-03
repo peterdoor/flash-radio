@@ -319,11 +319,7 @@
           <option value="es-ES-Neural2-A">Neural2-A España — femenina</option>
         </select>
       </div>
-      <span class="config-label">Música de fondo</span>
-      <select class="select" id="music-select" onchange="resetAudio()">
-        <option value="news" selected>🎵 Jingle de noticias</option>
-        <option value="none">Sin música</option>
-      </select>
+
     </div>
 
     <div class="progress-wrap" id="pwrap">
@@ -356,7 +352,7 @@
 <div class="toast" id="toast"></div>
 
 <div class="dev-footer" id="dev-footer">
-  <span class="dev-version">DoorApp v2.3</span>
+  <span class="dev-version">DoorApp v2.5</span>
   <button class="dev-reset" onclick="resetUsadas()" title="Resetear noticias usadas">↺ reset</button>
 </div>
 
@@ -1053,8 +1049,8 @@ async function generarAudio(){
     state.audioBlob=b64toBlob(d.radio);  // 128kbps stereo
     state.wasapBlob=b64toBlob(d.wasap);  // 48kbps mono
 
-    const mbRadio=(d.radioSize/1024/1024).toFixed(1);
-    const mbWasap=(d.wasapSize/1024/1024).toFixed(1);
+    const mbRadio=d.radioMB||'?';
+    const mbWasap=d.wasapMB||'?';
 
     setProg(100,'¡Listo!');await sleep(200);hideProg();
     const url=URL.createObjectURL(state.audioBlob);
